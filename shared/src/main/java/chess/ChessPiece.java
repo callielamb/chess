@@ -53,27 +53,45 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof ChessPiece that)) {
-            return false;
+        if (type == PieceType.PAWN ){
+            return pawnMovesCalculator(board, myPosition);
+        } else if (type == PieceType.QUEEN) {
+            return queenMovesCalculator(board, myPosition);
+        } else if (type == PieceType.KING) {
+            return kingMovesCalculator(board, myPosition);
+        } else if (type == PieceType.BISHOP) {
+            return bishopMovesCalculator(board, myPosition);
+        } else if (type == PieceType.KNIGHT) {
+            return knightMovesCalculator(board, myPosition);
+        } else if (type == PieceType.ROOK) {
+            return rookMovesCalculator(board, myPosition);
         }
-        return pieceColor == that.pieceColor && type == that.type;
+        else {
+            throw new RuntimeException("pieceMove not recognized");
+        }
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(pieceColor, type);
+    private Collection<ChessMove> queenMovesCalculator(ChessBoard board, ChessPosition myPosition){
+
     }
 
-    @Override
-    public String toString() {
-        return "ChessPiece{" +
-                "pieceColor=" + pieceColor +
-                ", type=" + type +
-                '}';
+    private Collection<ChessMove> kingMovesCalculator(ChessBoard board, ChessPosition myPosition){
+
+    }
+
+    private Collection<ChessMove> bishopMovesCalculator(ChessBoard board, ChessPosition myPosition){
+
+    }
+
+    private Collection<ChessMove> knightMovesCalculator(ChessBoard board, ChessPosition myPosition){
+
+    }
+
+    private Collection<ChessMove> rookMovesCalculator(ChessBoard board, ChessPosition myPosition){
+
+    }
+
+    private Collection<ChessMove> pawnMovesCalculator(ChessBoard board, ChessPosition myPosition){
+
     }
 }
