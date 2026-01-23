@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -72,26 +73,113 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> queenMovesCalculator(ChessBoard board, ChessPosition myPosition){
+        Collection<ChessMove> moves = new ArrayList<>();
 
+
+        return moves;
     }
 
     private Collection<ChessMove> kingMovesCalculator(ChessBoard board, ChessPosition myPosition){
-
+        Collection<ChessMove> moves = new ArrayList<>();
+        return moves;
     }
 
     private Collection<ChessMove> bishopMovesCalculator(ChessBoard board, ChessPosition myPosition){
-
+        Collection<ChessMove> moves = new ArrayList<>();
+        return moves;
     }
 
     private Collection<ChessMove> knightMovesCalculator(ChessBoard board, ChessPosition myPosition){
-
+        Collection<ChessMove> moves = new ArrayList<>();
+        int currentRow = myPosition.getRow();
+        int currentCol = myPosition.getColumn();
+        if ((currentRow+2 >= 1 && currentRow+2 <=8) && (currentCol+1 >=1 && currentCol+1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+2, currentCol+1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+2, currentCol+1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow+2, currentCol+1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+2, currentCol+1), null));
+            }
+        }
+        if ((currentRow+2 >= 1 && currentRow+2 <=8) && (currentCol-1 >=1 && currentCol-1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+2, currentCol-1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+2, currentCol-1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow+2, currentCol-1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+2, currentCol-1), null));
+            }
+        }
+        if ((currentRow-2 >= 1 && currentRow-2 <=8) && (currentCol+1 >=1 && currentCol+1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow-2, currentCol+1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-2, currentCol+1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow-2, currentCol+1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-2, currentCol+1), null));
+            }
+        }
+        if ((currentRow-2 >= 1 && currentRow-2 <=8) && (currentCol-1 >=1 && currentCol-1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow-2, currentCol-1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-2, currentCol-1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow-2, currentCol-1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-2, currentCol-1), null));
+            }
+        }
+        if ((currentRow+1 >= 1 && currentRow+1 <=8) && (currentCol+2 >=1 && currentCol+2 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+1, currentCol+2)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol+2), null));
+            } else if (board.getPiece(new ChessPosition(currentRow+1, currentCol+2)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol+2), null));
+            }
+        }
+        if ((currentRow+1 >= 1 && currentRow+1 <=8) && (currentCol-2 >=1 && currentCol-2 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+1, currentCol-2)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol-2), null));
+            } else if (board.getPiece(new ChessPosition(currentRow+1, currentCol-2)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol-2), null));
+            }
+        }
+        if ((currentRow-1 >= 1 && currentRow-1 <=8) && (currentCol+2 >=1 && currentCol+2 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow-1, currentCol+2)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol+2), null));
+            } else if (board.getPiece(new ChessPosition(currentRow-1, currentCol+2)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol+2), null));
+            }
+        }
+        if ((currentRow-1 >= 1 && currentRow-1 <=8) && (currentCol-2 >=1 && currentCol-2 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow-1, currentCol-2)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol-2), null));
+            } else if (board.getPiece(new ChessPosition(currentRow-1, currentCol-2)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol-2), null));
+            }
+        }
+        return moves;
     }
 
     private Collection<ChessMove> rookMovesCalculator(ChessBoard board, ChessPosition myPosition){
-
+        Collection<ChessMove> moves = new ArrayList<>();
+        return moves;
     }
 
     private Collection<ChessMove> pawnMovesCalculator(ChessBoard board, ChessPosition myPosition){
+        Collection<ChessMove> moves = new ArrayList<>();
+        return moves;
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ChessPiece that)) {
+            return false;
+        }
+        return pieceColor == that.pieceColor && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
+    }
+
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "pieceColor=" + pieceColor +
+                ", type=" + type +
+                '}';
     }
 }
