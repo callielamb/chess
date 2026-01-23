@@ -81,6 +81,65 @@ public class ChessPiece {
 
     private Collection<ChessMove> kingMovesCalculator(ChessBoard board, ChessPosition myPosition){
         Collection<ChessMove> moves = new ArrayList<>();
+        int currentRow = myPosition.getRow();
+        int currentCol = myPosition.getColumn();
+        if ((currentRow+1 >= 1 && currentRow+1 <=8) && (currentCol+1 >=1 && currentCol+1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+1, currentCol+1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol+1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow+1, currentCol+1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol+1), null));
+            }
+        }
+        if ((currentRow+1 >= 1 && currentRow+1 <=8) && (currentCol-1 >=1 && currentCol-1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+1, currentCol-1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol-1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow+1, currentCol-1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol-1), null));
+            }
+        }
+        if ((currentRow-1 >= 1 && currentRow-1 <=8) && (currentCol+1 >=1 && currentCol+1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow-1, currentCol+1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol+1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow-1, currentCol+1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol+1), null));
+            }
+        }
+        if ((currentRow-1 >= 1 && currentRow-1 <=8) && (currentCol-1 >=1 && currentCol-1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow-1, currentCol-1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol-1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow-1, currentCol-1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol-1), null));
+            }
+        }
+        if ((currentRow+1 >= 1 && currentRow+1 <=8) && (currentCol >=1 && currentCol <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+1, currentCol)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol), null));
+            } else if (board.getPiece(new ChessPosition(currentRow+1, currentCol)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+1, currentCol), null));
+            }
+        }
+        if ((currentRow-1 >= 1 && currentRow-1 <=8) && (currentCol >=1 && currentCol <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow-1, currentCol)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol), null));
+            } else if (board.getPiece(new ChessPosition(currentRow-1, currentCol)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow-1, currentCol), null));
+            }
+        }
+        if ((currentRow >= 1 && currentRow <=8) && (currentCol+1 >=1 && currentCol+1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow, currentCol+1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow, currentCol+1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow, currentCol+1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow, currentCol+1), null));
+            }
+        }
+        if ((currentRow >= 1 && currentRow <=8) && (currentCol-1 >=1 && currentCol-1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow, currentCol-1)) == null){
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow, currentCol-1), null));
+            } else if (board.getPiece(new ChessPosition(currentRow, currentCol-1)).getTeamColor() != pieceColor) {
+                moves.add(new ChessMove(myPosition, new ChessPosition(currentRow, currentCol-1), null));
+            }
+        }
+
         return moves;
     }
 
