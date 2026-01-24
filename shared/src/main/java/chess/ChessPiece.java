@@ -383,6 +383,41 @@ public class ChessPiece {
 
     private Collection<ChessMove> pawnMovesCalculator(ChessBoard board, ChessPosition myPosition){
         Collection<ChessMove> moves = new ArrayList<>();
+        int currentRow = myPosition.getRow();
+        int currentCol = myPosition.getColumn();
+        int direction=0;
+        int start=0;
+        int promo = 0;
+        if (pieceColor == ChessGame.TeamColor.BLACK){
+             direction = -1;
+             start = 7;
+             promo = 1;
+        } else if (pieceColor == ChessGame.TeamColor.WHITE) {
+             direction = 1;
+             start = 2;
+             promo = 8;
+        }
+        if ((currentRow+direction >= 1 && currentRow+direction <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+direction, currentCol)) == null){
+                if (currentRow + direction == promo){
+                    moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+direction, currentCol), PieceType.QUEEN));
+                    moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+direction, currentCol), PieceType.BISHOP));
+                    moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+direction, currentCol), PieceType.ROOK));
+                    moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+direction, currentCol), PieceType.KNIGHT));
+                } else{
+                    moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+direction, currentCol), null));
+                }
+                if (currentRow == start){
+                    if ((currentRow+direction+direction >= 1 && currentRow+direction+direction <=8)) {
+                        if (board.getPiece(new ChessPosition(currentRow+direction+direction, currentCol)) == null){
+                            moves.add(new ChessMove(myPosition, new ChessPosition(currentRow+(2*direction), currentCol), null));
+                        }
+
+                    }
+                }
+            }
+        }
+
         return moves;
     }
 
