@@ -417,6 +417,34 @@ public class ChessPiece {
                 }
             }
         }
+        if ((currentRow+direction >= 1 && currentRow+direction <=8) && (currentCol+1 >=1 && currentCol+1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+direction, currentCol+1)) != null) {
+                if (board.getPiece(new ChessPosition(currentRow + direction, currentCol + 1)).getTeamColor() != pieceColor) {
+                    if (currentRow + direction == promo) {
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol + 1), PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol + 1), PieceType.BISHOP));
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol + 1), PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol + 1), PieceType.KNIGHT));
+                    } else {
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol + 1), null));
+                    }
+                }
+            }
+        }
+        if ((currentRow+direction >= 1 && currentRow+direction <=8) && (currentCol-1 >=1 && currentCol-1 <=8)) {
+            if (board.getPiece(new ChessPosition(currentRow+direction, currentCol-1)) != null) {
+                if (board.getPiece(new ChessPosition(currentRow + direction, currentCol - 1)).getTeamColor() != pieceColor) {
+                    if (currentRow + direction == promo) {
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol - 1), PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol - 1), PieceType.BISHOP));
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol - 1), PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol - 1), PieceType.KNIGHT));
+                    } else {
+                        moves.add(new ChessMove(myPosition, new ChessPosition(currentRow + direction, currentCol-1), null));
+                    }
+                }
+            }
+        }
 
         return moves;
     }
