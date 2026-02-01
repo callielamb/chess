@@ -9,23 +9,22 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessMove {
-
-    ChessPosition startPosition;
+    ChessPosition startposition;
     ChessPosition endPosition;
-    ChessPiece.PieceType promotionPiece;
+    ChessPiece.PieceType promo;
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
-        this.startPosition = startPosition;
+        this.startposition = startPosition;
         this.endPosition = endPosition;
-        this.promotionPiece = promotionPiece;
+        this.promo = promotionPiece;
     }
 
     /**
      * @return ChessPosition of starting location
      */
     public ChessPosition getStartPosition() {
-        return startPosition;
+        return startposition;
     }
 
     /**
@@ -42,7 +41,16 @@ public class ChessMove {
      * @return Type of piece to promote a pawn to, or null if no promotion
      */
     public ChessPiece.PieceType getPromotionPiece() {
-        return promotionPiece;
+        return promo;
+    }
+
+    @Override
+    public String toString() {
+        return "ChessMove{" +
+                "startposition=" + startposition +
+                ", endPosition=" + endPosition +
+                ", promo=" + promo +
+                '}';
     }
 
     @Override
@@ -50,20 +58,11 @@ public class ChessMove {
         if (!(o instanceof ChessMove chessMove)) {
             return false;
         }
-        return Objects.equals(startPosition, chessMove.startPosition) && Objects.equals(endPosition, chessMove.endPosition) && promotionPiece == chessMove.promotionPiece;
+        return Objects.equals(startposition, chessMove.startposition) && Objects.equals(endPosition, chessMove.endPosition) && promo == chessMove.promo;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(startPosition, endPosition, promotionPiece);
-    }
-
-    @Override
-    public String toString() {
-        return "ChessMove{" +
-                "startPosition=" + startPosition +
-                ", endPosition=" + endPosition +
-                ", promotionPiece=" + promotionPiece +
-                '}';
+        return Objects.hash(startposition, endPosition, promo);
     }
 }
