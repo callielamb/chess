@@ -161,6 +161,39 @@ public class ChessGame {
     }
 
     /**
+     * envoke the en passant rule
+     *
+     * @param move
+     *
+     * The capturing pawn must have advanced exactly three ranks to perform this move.
+     * The captured pawn must have moved two squares in one move, landing right next to the capturing pawn.
+     * The en passant capture must be performed on the turn immediately after the pawn being captured moves.
+     * If the player does not capture en passant on that turn, they no longer can do it later.
+     */
+    public void enPassant(ChessMove move){
+
+    }
+
+    /**
+     * envoke castling rule
+     *
+     * @param move
+     *
+     * cannot castle in check
+     * cannot castle if opposing teams move is between king and rook
+     * cannot castle into check
+     *
+     * can only castle if havent moved king and rook
+     * can only castle if no pieces lie between king and rook
+     *
+     * queenside castling?? ignore for now?
+     */
+
+    public void castling(ChessMove move){
+
+    }
+
+    /**
      * Determines if the given team is in check
      *
      * @param teamColor which team to check for check
