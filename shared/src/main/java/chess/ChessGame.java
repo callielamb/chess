@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -10,11 +11,13 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessGame {
-
     TeamColor teamTurn;
+    ChessBoard board;
 
     public ChessGame() {
-        teamTurn = TeamColor.WHITE;
+        this.board = new ChessBoard();
+        board.resetBoard();
+        this.teamTurn = TeamColor.WHITE;
     }
 
     /**
@@ -49,7 +52,56 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        //piece at the location?
+        ChessPiece piece = board.getPiece(startPosition);
+        //if no pice then return null
+        if (piece == null){
+            return null;
+        }
+
+        //valid options to move
+        Collection<ChessMove> options = piece.pieceMoves(board, startPosition);
+        //list of legal moves
+        Collection<ChessMove> legalMoves = new ArrayList<>();
+
+        for (ChessMove move : options) {
+            ChessBoard copyBoard = new ChessBoard();
+            for (int row = 1; row <= 8; row++) {
+                for (int col = 1; col <= 8; col++) {
+                    ChessPosition pos = new ChessPosition(row, col);
+                    ChessPiece posPiece = board.getPiece(pos);
+
+                    if (posPiece != null) {
+                        copyBoard.addPiece(pos, posPiece);
+                    }
+                }
+            }
+
+            ChessPosition start = move.getStartPosition();
+            ChessPosition go = move.getEndPosition();
+            ChessPiece moving = copyBoard.getPiece(start);
+            //clear current square
+            copyBoard.addPiece(start, null);
+
+            //make sure toa ccount for promotions?
+            if (move.getPromotionPiece() != null) {
+                copyBoard.addPiece(go, new ChessPiece(moving.getTeamColor(), move.getPromotionPiece()));
+            } else {
+                copyBoard.addPiece(go, moving);
+            }
+
+            //check if king is in check on the copy before adding to real board
+            ChessBoard ogBoard = this.board;
+            this.board = copyBoard;
+            boolean inCheck = isInCheck(moving.getTeamColor());
+            this.board = ogBoard;
+
+            if (!inCheck) {
+                legalMoves.add(move);
+            }
+        }
+
+        return legalMoves;
     }
 
     /**
@@ -99,7 +151,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
     }
 
     /**
@@ -108,7 +160,7 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
 
     @Override
@@ -116,18 +168,19 @@ public class ChessGame {
         if (!(o instanceof ChessGame chessGame)) {
             return false;
         }
-        return teamTurn == chessGame.teamTurn;
+        return teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(teamTurn);
+        return Objects.hash(teamTurn, board);
     }
 
     @Override
     public String toString() {
         return "ChessGame{" +
                 "teamTurn=" + teamTurn +
+                ", board=" + board +
                 '}';
     }
 }
