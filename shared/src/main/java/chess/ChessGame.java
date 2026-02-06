@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -224,6 +225,7 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
+        //if in check AND no legal moves =true
     }
 
     /**
@@ -236,13 +238,30 @@ public class ChessGame {
      * Returns true if the given team has no legal moves but their king is not in immediate danger.
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        //return true if no possible moves
+        //is NOT in check AND no legal moves = true
         //if king is in danger -->return false
         if(isInCheck(teamColor)){
             return false;
         }
-        //otherwise false so return false unless true
-        return false;
+        //return true if no possible moves
+        //look at each piece on board
+        for (int row = 1; row<=8; row++){
+            for(int col = 1; col<=8; col++){
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(pos);
+                //if there is a piece and its the right color, then add to moves
+                if((piece != null) && (piece.getTeamColor() == teamColor)){
+                    Collection<ChessMove> moves = validMoves(pos);
+                    //if moves isnt empty then there is no stalemate
+                    if(moves != null && !moves.isEmpty()){
+                        return false;
+                    }
+                }
+
+            }
+        }
+        //if not false then true
+        return true;
     }
 
     /**
