@@ -224,8 +224,30 @@ public class ChessGame {
      * Returns true if the given team has no way to protect their king from being captured.
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
         //if in check AND no legal moves =true
+        //has to be in check to be checkmate!
+        if(!isInCheck(teamColor)){
+            return false;
+        }
+
+        //for whole board, looking for valid moves
+        for (int row = 1; row<=8; row++){
+            for(int col = 1; col<=8; col++){
+                ChessPosition pos = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(pos);
+                //if there is a piece and its the right color, then add to moves
+                if((piece != null) && (piece.getTeamColor() == teamColor)){
+                    Collection<ChessMove> moves = validMoves(pos);
+                    //if moves isnt empty then there is no stalemate
+                    if(moves != null && !moves.isEmpty()){
+                        return false;
+                    }
+                }
+
+            }
+        }
+        //if not false then true
+        return true;
     }
 
     /**
