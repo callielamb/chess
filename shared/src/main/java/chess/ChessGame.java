@@ -174,7 +174,7 @@ public class ChessGame {
 
         ChessPiece piece = board.getPiece(start);
 
-        //piece at start?
+        //is there a piece at start?
         if (piece == null){
             throw new InvalidMoveException("No piece at starting position");
         }
@@ -191,7 +191,7 @@ public class ChessGame {
 
         //are we gonna do en passant?
         boolean isEnPassant = false;
-        //piece is a pawn, target isnt null, the pos we wanna go to is the target, piece at target is empty, go to the side 1 space
+        //piece is a pawn, target isnt empty, the pos we wanna go to is the target, piece at target is empty, go to the side 1 space
         if ((piece.getPieceType() == ChessPiece.PieceType.PAWN) && (enPassantTarget != null) && (go.equals(enPassantTarget)) && (board.getPiece(go) == null) && (Math.abs(go.getColumn() - start.getColumn()) == 1)) {
             isEnPassant = true;
         }
@@ -236,7 +236,6 @@ public class ChessGame {
             }
         }
 
-        //next turn = opposite color now
         if (teamTurn == TeamColor.BLACK) {
             teamTurn = TeamColor.WHITE;
         } else {
