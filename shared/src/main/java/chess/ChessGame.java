@@ -14,11 +14,14 @@ import java.util.Objects;
 public class ChessGame {
     TeamColor teamTurn;
     ChessBoard board;
+    ChessPosition enPassantTarget;
+
 
     public ChessGame() {
         this.board = new ChessBoard();
         board.resetBoard();
         this.teamTurn = TeamColor.WHITE;
+        enPassantTarget = null;
     }
 
     /**
@@ -46,6 +49,16 @@ public class ChessGame {
     }
 
     /**
+     * envoke the en passant rule
+     *
+     *
+     * The capturing pawn must have advanced exactly three ranks to perform this move.
+     * The captured pawn must have moved two squares in one move, landing right next to the capturing pawn.
+     * The en passant capture must be performed on the turn immediately after the pawn being captured moves.
+     * If the player does not capture en passant on that turn, they no longer can do it later.
+     */
+
+    /**
      * Gets a valid moves for a piece at the given location
      *
      * @param startPosition the piece to get valid moves for
@@ -65,9 +78,44 @@ public class ChessGame {
         }
 
         //valid options to move
-        Collection<ChessMove> options = piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> options = new ArrayList<>(piece.pieceMoves(board, startPosition));
         //list of legal moves
         Collection<ChessMove> legalMoves = new ArrayList<>();
+
+        //en passant
+        //if the piece is a pawn and the enPassant target is not null then continue
+        if(piece.getPieceType() == ChessPiece.PieceType.PAWN && enPassantTarget != null){
+            TeamColor myColor = piece.getTeamColor();
+
+            int startRow = startPosition.getRow();
+            int startCol = startPosition.getColumn();
+            int targetR= enPassantTarget.getRow();
+            int targetC = enPassantTarget.getColumn();
+
+            //which way are we going
+            int direction;
+            if (myColor == TeamColor.WHITE) {
+                direction = 1;
+            } else {
+                direction = -1;
+            }
+
+            //move 1 forward diagonally
+            if (targetR == startRow + direction && Math.abs(targetC - startCol) == 1) {
+
+                //is square empty
+                if (board.getPiece(enPassantTarget) == null) {
+
+                    //potential capture pawn is next to our location
+                    ChessPosition capturedPawnPos = new ChessPosition(startRow, targetC);
+                    ChessPiece capturedPiece = board.getPiece(capturedPawnPos);
+
+                    if ((capturedPiece != null) && (capturedPiece.getTeamColor() != myColor) && (capturedPiece.getPieceType() == ChessPiece.PieceType.PAWN)) {
+                        options.add(new ChessMove(startPosition, enPassantTarget, null));
+                    }
+                }
+            }
+        }
 
         //for each move in options
         for (ChessMove move : options) {
@@ -130,6 +178,7 @@ public class ChessGame {
         if (piece == null){
             throw new InvalidMoveException("No piece at starting position");
         }
+
         //check whos turn it is, if not right then throw exception
         if(piece.getTeamColor() != teamTurn){
             throw new InvalidMoveException("Not your team's turn!!");
@@ -139,6 +188,14 @@ public class ChessGame {
         if (legal == null || !legal.contains(move)) {
             throw new InvalidMoveException("Invalid move!!");
         }
+
+        //are we gonna do en passant?
+        boolean isEnPassant = false;
+        //piece is a pawn, target isnt null, the pos we wanna go to is the target, piece at target is empty, go to the side 1 space
+        if ((piece.getPieceType() == ChessPiece.PieceType.PAWN) && (enPassantTarget != null) && (go.equals(enPassantTarget)) && (board.getPiece(go) == null) && (Math.abs(go.getColumn() - start.getColumn()) == 1)) {
+            isEnPassant = true;
+        }
+
         //if passes all throws then can add move
         board.addPiece(start, null);
 
@@ -152,6 +209,33 @@ public class ChessGame {
             board.addPiece(go, piece);
         }
 
+        //remove captured pawn
+        if (isEnPassant) {
+            int direction;
+            //which way we goin?
+            if (piece.getTeamColor() == TeamColor.WHITE) {
+                direction = 1;
+            } else {
+                direction = -1;
+            }
+
+            ChessPosition capturedPawnPos = new ChessPosition(go.getRow() - direction, go.getColumn());
+            board.addPiece(capturedPawnPos, null);
+        }
+
+        //reset enPassant for next move
+        enPassantTarget = null;
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            int rowDiff = go.getRow() - start.getRow();
+            //pawn moves 2 rows RIGHT???
+            if (Math.abs(rowDiff) == 2) {
+                //what row was skipped in this?
+                int skippedRow = (start.getRow() + go.getRow()) / 2;
+                //whats the target
+                enPassantTarget = new ChessPosition(skippedRow, start.getColumn());
+            }
+        }
+
         //next turn = opposite color now
         if (teamTurn == TeamColor.BLACK) {
             teamTurn = TeamColor.WHITE;
@@ -160,19 +244,7 @@ public class ChessGame {
         }
     }
 
-    /**
-     * envoke the en passant rule
-     *
-     * @param move
-     *
-     * The capturing pawn must have advanced exactly three ranks to perform this move.
-     * The captured pawn must have moved two squares in one move, landing right next to the capturing pawn.
-     * The en passant capture must be performed on the turn immediately after the pawn being captured moves.
-     * If the player does not capture en passant on that turn, they no longer can do it later.
-     */
-    public void enPassant(ChessMove move){
 
-    }
 
     /**
      * envoke castling rule
@@ -189,9 +261,6 @@ public class ChessGame {
      * queenside castling?? ignore for now?
      */
 
-    public void castling(ChessMove move){
-
-    }
 
     /**
      * Determines if the given team is in check
