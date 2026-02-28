@@ -52,7 +52,8 @@ public class InsertData implements Database {
     @Override
     public int createGame(GameData game) {
         int id = nextGameID++;
-        games.put(id, game);
+        GameData newGame = new GameData(id, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
+        games.put(id, newGame);
         return id;
     }
 
