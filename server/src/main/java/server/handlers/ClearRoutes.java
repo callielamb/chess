@@ -12,7 +12,7 @@ public class ClearRoutes {
             try {
                 ClearResult res = clearService.clear();
                 ctx.status(200);
-                ctx.json(res);
+                ctx.json(new Object());
             } catch (Exception e) {
                 ctx.status(500);
                 ctx.json(new ClearResult("Error: " + e.getMessage()));

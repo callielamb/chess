@@ -7,6 +7,7 @@ import Result.JoinGameResult;
 import Result.ListGamesResult;
 import com.google.gson.Gson;
 import io.javalin.Javalin;
+import com.google.gson.JsonSyntaxException;
 
 public class GameRoutes {
 
@@ -20,8 +21,12 @@ public class GameRoutes {
                 ListGamesResult res = gameService.listGames(authToken);
 
                 setStatus(ctx, res.message());
-                ctx.json(res);
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
 
+            } catch (JsonSyntaxException e) {
+                ctx.status(400);
+                ctx.json(new CreateGameResult(null, "Error: bad request"));
             } catch (Exception e) {
                 ctx.status(500);
                 ctx.json(new ListGamesResult(null, "Error: " + e.getMessage()));
@@ -35,8 +40,12 @@ public class GameRoutes {
                 CreateGameResult res = gameService.createGame(authToken, req);
 
                 setStatus(ctx, res.message());
-                ctx.json(res);
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
 
+            } catch (JsonSyntaxException e) {
+                ctx.status(400);
+                ctx.json(new CreateGameResult(null, "Error: bad request"));
             } catch (Exception e) {
                 ctx.status(500);
                 ctx.json(new CreateGameResult(null, "Error: " + e.getMessage()));
@@ -50,7 +59,8 @@ public class GameRoutes {
                 JoinGameResult res = gameService.joinGame(authToken, req);
 
                 setStatus(ctx, res.message());
-                ctx.json(res);
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
 
             } catch (Exception e) {
                 ctx.status(500);

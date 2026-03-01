@@ -7,6 +7,7 @@ import Result.LogoutResult;
 import Result.RegisterResult;
 import com.google.gson.Gson;
 import io.javalin.Javalin;
+import com.google.gson.JsonSyntaxException;
 
 public class UserRoutes {
 
@@ -20,7 +21,12 @@ public class UserRoutes {
                 RegisterResult res = userService.register(req);
 
                 setStatus(ctx, res.message());
-                ctx.json(res);
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
+
+            } catch (JsonSyntaxException e) {
+                ctx.status(400);
+                ctx.json(new RegisterResult(null, null, "Error: bad request"));
 
             } catch (Exception e) {
                 ctx.status(500);
@@ -34,7 +40,12 @@ public class UserRoutes {
                 LoginResult res = userService.login(req);
 
                 setStatus(ctx, res.message());
-                ctx.json(res);
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
+
+            } catch (JsonSyntaxException e) {
+                ctx.status(400);
+                ctx.json(new RegisterResult(null, null, "Error: bad request"));
 
             } catch (Exception e) {
                 ctx.status(500);
@@ -48,7 +59,8 @@ public class UserRoutes {
                 LogoutResult res = userService.logout(authToken);
 
                 setStatus(ctx, res.message());
-                ctx.json(res);
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
 
             } catch (Exception e) {
                 ctx.status(500);
