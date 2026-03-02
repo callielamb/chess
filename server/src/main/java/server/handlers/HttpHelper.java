@@ -1,28 +1,26 @@
 package server.handlers;
-
+import com.google.gson.Gson;
 import io.javalin.http.Context;
 
-public class httpHelper {
+public class HttpHelper {
 
     public static void setStatus(Context ctx, String message) {
         if (message == null) {
             ctx.status(200);
             return;
         }
-        if (message.equals("Error:bad request")) {
+        if (message.equals("Error: bad request")) {
             ctx.status(400);
             return;
         }
-        if (message.equals("Error:unauthorized")) {
+        if (message.equals("Error: unauthorized")) {
             ctx.status(401);
             return;
         }
-
-        if (message.equals("Error: already taken ")) {
+        if (message.equals("Error: already taken")) {
             ctx.status(403);
             return;
         }
-
         ctx.status(500);
     }
 }

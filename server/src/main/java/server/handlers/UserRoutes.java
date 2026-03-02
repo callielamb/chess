@@ -22,7 +22,7 @@ public class UserRoutes {
             try {
                 RegisterRequest req = gson.fromJson(ctx.body(), RegisterRequest.class);
                 RegisterResult res = userService.register(req);
-                setStatus(ctx, res.message());
+                HttpHelper.setStatus(ctx, res.message());
                 ctx.contentType("application/json");
                 ctx.result(gson.toJson(res));
                 return;
@@ -48,7 +48,7 @@ public class UserRoutes {
                 LoginRequest req = gson.fromJson(ctx.body(), LoginRequest.class);
                 LoginResult res = userService.login(req);
 
-                setStatus(ctx, res.message());
+                HttpHelper.setStatus(ctx, res.message());
                 ctx.contentType("application/json");
                 ctx.result(gson.toJson(res));
                 return;
@@ -73,7 +73,7 @@ public class UserRoutes {
             try {
                 String authToken = ctx.header("authorization");
                 LogoutResult res = userService.logout(authToken);
-                setStatus(ctx, res.message());
+                HttpHelper.setStatus(ctx, res.message());
                 ctx.contentType("application/json");
                 ctx.result(gson.toJson(res));
                 return;
@@ -85,25 +85,5 @@ public class UserRoutes {
                 ctx.result(gson.toJson(res));
             }
         });
-    }
-
-    private void setStatus(Context ctx, String message) {
-        if (message == null) {
-            ctx.status(200);
-            return;
-        }
-        if (message.equals("Error: bad request")) {
-            ctx.status(400);
-            return;
-        }
-        if (message.equals("Error: unauthorized")) {
-            ctx.status(401);
-            return;
-        }
-        if (message.equals("Error: already taken")) {
-            ctx.status(403);
-            return;
-        }
-        ctx.status(500);
     }
 }

@@ -23,7 +23,7 @@ public class GameRoutes {
                 String authToken = ctx.header("authorization");
                 ListGamesResult res = gameService.listGames(authToken);
 
-                setStatus(ctx, res.message());
+                HttpHelper.setStatus(ctx, res.message());
                 ctx.contentType("application/json");
                 ctx.result(gson.toJson(res));
                 return;
@@ -43,7 +43,7 @@ public class GameRoutes {
                 CreateGameRequest req = gson.fromJson(ctx.body(), CreateGameRequest.class);
                 CreateGameResult res = gameService.createGame(authToken, req);
 
-                setStatus(ctx, res.message());
+                HttpHelper.setStatus(ctx, res.message());
                 ctx.contentType("application/json");
                 ctx.result(gson.toJson(res));
                 return;
@@ -70,7 +70,7 @@ public class GameRoutes {
                 JoinGameRequest req = gson.fromJson(ctx.body(), JoinGameRequest.class);
                 JoinGameResult res = gameService.joinGame(authToken, req);
 
-                setStatus(ctx, res.message());
+                HttpHelper.setStatus(ctx, res.message());
                 ctx.contentType("application/json");
                 ctx.result(gson.toJson(res));
                 return;
@@ -89,26 +89,5 @@ public class GameRoutes {
                 ctx.result(gson.toJson(res));
             }
         });
-    }
-
-    private void setStatus(Context ctx, String message) {
-
-        if (message == null) {
-            ctx.status(200);
-            return;
-        }
-        if (message.equals("Error: bad request")) {
-            ctx.status(400);
-            return;
-        }
-        if (message.equals("Error: unauthorized")) {
-            ctx.status(401);
-            return;
-        }
-        if (message.equals("Error: already taken")) {
-            ctx.status(403);
-            return;
-        }
-        ctx.status(500);
     }
 }
