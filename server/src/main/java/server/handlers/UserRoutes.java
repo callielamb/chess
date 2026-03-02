@@ -1,11 +1,11 @@
 package server.handlers;
 
-import Service.UserService;
-import Request.LoginRequest;
-import Request.RegisterRequest;
-import Result.LoginResult;
-import Result.LogoutResult;
-import Result.RegisterResult;
+import service.UserService;
+import request.LoginRequest;
+import request.RegisterRequest;
+import result.LoginResult;
+import result.LogoutResult;
+import result.RegisterResult;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import io.javalin.Javalin;

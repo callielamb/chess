@@ -1,7 +1,7 @@
 package server.handlers;
 
-import Service.ClearService;
-import Result.ClearResult;
+import service.ClearService;
+import result.ClearResult;
 import io.javalin.Javalin;
 
 public class ClearRoutes {

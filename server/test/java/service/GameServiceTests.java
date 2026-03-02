@@ -1,12 +1,12 @@
-package Service;
+package service;
 
-import Request.CreateGameRequest;
-import Request.JoinGameRequest;
-import Request.RegisterRequest;
-import Result.CreateGameResult;
-import Result.JoinGameResult;
-import Result.ListGamesResult;
-import Result.RegisterResult;
+import request.CreateGameRequest;
+import request.JoinGameRequest;
+import request.RegisterRequest;
+import result.CreateGameResult;
+import result.JoinGameResult;
+import result.ListGamesResult;
+import result.RegisterResult;
 import dataaccess.Database;
 import dataaccess.InsertData;
 import org.junit.jupiter.api.Test;

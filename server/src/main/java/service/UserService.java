@@ -1,10 +1,10 @@
-package Service;
+package service;
 
-import Request.LoginRequest;
-import Request.RegisterRequest;
-import Result.LoginResult;
-import Result.LogoutResult;
-import Result.RegisterResult;
+import request.LoginRequest;
+import request.RegisterRequest;
+import result.LoginResult;
+import result.LogoutResult;
+import result.RegisterResult;
 import dataaccess.Database;
 import model.AuthData;
 import model.UserData;

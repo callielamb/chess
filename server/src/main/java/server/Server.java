@@ -1,7 +1,7 @@
 package server;
-import Service.ClearService;
-import Service.GameService;
-import Service.UserService;
+import service.ClearService;
+import service.GameService;
+import service.UserService;
 import dataaccess.Database;
 import dataaccess.InsertData;
 import io.javalin.Javalin;

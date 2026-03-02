@@ -1,11 +1,11 @@
 package server.handlers;
 
-import Service.GameService;
-import Request.CreateGameRequest;
-import Request.JoinGameRequest;
-import Result.CreateGameResult;
-import Result.JoinGameResult;
-import Result.ListGamesResult;
+import service.GameService;
+import request.CreateGameRequest;
+import request.JoinGameRequest;
+import result.CreateGameResult;
+import result.JoinGameResult;
+import result.ListGamesResult;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import io.javalin.Javalin;
