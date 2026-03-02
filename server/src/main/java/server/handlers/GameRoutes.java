@@ -1,4 +1,5 @@
 package server.handlers;
+
 import Service.GameService;
 import Request.CreateGameRequest;
 import Request.JoinGameRequest;
@@ -6,8 +7,9 @@ import Result.CreateGameResult;
 import Result.JoinGameResult;
 import Result.ListGamesResult;
 import com.google.gson.Gson;
-import io.javalin.Javalin;
 import com.google.gson.JsonSyntaxException;
+import io.javalin.Javalin;
+import io.javalin.http.Context;
 
 public class GameRoutes {
 
@@ -15,6 +17,7 @@ public class GameRoutes {
 
     public GameRoutes(Javalin javalin, GameService gameService) {
 
+        //list availbale games
         javalin.get("/game", ctx -> {
             try {
                 String authToken = ctx.header("authorization");
@@ -23,16 +26,17 @@ public class GameRoutes {
                 setStatus(ctx, res.message());
                 ctx.contentType("application/json");
                 ctx.result(gson.toJson(res));
+                return;
 
-            } catch (JsonSyntaxException e) {
-                ctx.status(400);
-                ctx.json(new CreateGameResult(null, "Error: bad request"));
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(new ListGamesResult(null, "Error: " + e.getMessage()));
+                ListGamesResult res = new ListGamesResult(null, "Error: " + e.getMessage());
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
             }
         });
 
+        //creates game
         javalin.post("/game", ctx -> {
             try {
                 String authToken = ctx.header("authorization");
@@ -42,16 +46,24 @@ public class GameRoutes {
                 setStatus(ctx, res.message());
                 ctx.contentType("application/json");
                 ctx.result(gson.toJson(res));
+                return;
 
             } catch (JsonSyntaxException e) {
                 ctx.status(400);
-                ctx.json(new CreateGameResult(null, "Error: bad request"));
+                CreateGameResult res = new CreateGameResult(null, "Error: bad request");
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
+                return;
+
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(new CreateGameResult(null, "Error: " + e.getMessage()));
+                CreateGameResult res = new CreateGameResult(null, "Error: " + e.getMessage());
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
             }
         });
 
+        //join a game
         javalin.put("/game", ctx -> {
             try {
                 String authToken = ctx.header("authorization");
@@ -61,25 +73,42 @@ public class GameRoutes {
                 setStatus(ctx, res.message());
                 ctx.contentType("application/json");
                 ctx.result(gson.toJson(res));
+                return;
+
+            } catch (JsonSyntaxException e) {
+                ctx.status(400);
+                JoinGameResult res = new JoinGameResult("Error: bad request");
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
+                return;
 
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(new JoinGameResult("Error: " + e.getMessage()));
+                JoinGameResult res = new JoinGameResult("Error: " + e.getMessage());
+                ctx.contentType("application/json");
+                ctx.result(gson.toJson(res));
             }
         });
     }
 
-    private void setStatus(io.javalin.http.Context ctx, String message) {
+    private void setStatus(Context ctx, String message) {
+
         if (message == null) {
             ctx.status(200);
-        } else if (message.equals("Error:bad request")) {
-            ctx.status(400);
-        } else if (message.equals("Error: unauthorized")) {
-            ctx.status(401);
-        } else if (message.equals("Error: already taken ")) {
-            ctx.status(403);
-        } else {
-            ctx.status(500);
+            return;
         }
+        if (message.equals("Error: bad request")) {
+            ctx.status(400);
+            return;
+        }
+        if (message.equals("Error: unauthorized")) {
+            ctx.status(401);
+            return;
+        }
+        if (message.equals("Error: already taken")) {
+            ctx.status(403);
+            return;
+        }
+        ctx.status(500);
     }
 }

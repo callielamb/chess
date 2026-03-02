@@ -12,10 +12,13 @@ public class ClearRoutes {
             try {
                 ClearResult res = clearService.clear();
                 ctx.status(200);
-                ctx.json(new Object());
+                ctx.contentType("application/json");
+                ctx.result("{}");
+                return;
             } catch (Exception e) {
                 ctx.status(500);
-                ctx.json(new ClearResult("Error: " + e.getMessage()));
+                ctx.contentType("application/json");
+                ctx.result("{\"message\":\"Error: " + e.getMessage() + "\"}");
             }
         });
     }
