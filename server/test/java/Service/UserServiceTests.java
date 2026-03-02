@@ -21,11 +21,11 @@ public class UserServiceTests {
         Database db = new InsertData();
         UserService service = new UserService(db);
 
-        RegisterRequest req = new RegisterRequest("sam", "pass", "sam@email.com");
+        RegisterRequest req = new RegisterRequest("nola", "pass", "nola@email.com");
         RegisterResult res = service.register(req);
 
         assertNull(res.message());
-        assertEquals("sam", res.username());
+        assertEquals("nola", res.username());
         assertNotNull(res.authToken());
     }
 
