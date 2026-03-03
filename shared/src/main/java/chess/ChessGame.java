@@ -67,7 +67,8 @@ public class ChessGame {
      *
      * Takes as input a position on the chessboard and returns all moves the piece there can legally make.
      * If there is no piece at that location, this method returns null.
-     * A move is valid if it is a "piece move" for the piece at the input location and making that move would not leave the team’s king in danger of check.
+     * A move is valid if it is a "piece move" for the piece at the input location
+     * and making that move would not leave the team’s king in danger of check.
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         //piece at the location?
