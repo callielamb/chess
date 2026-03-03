@@ -206,16 +206,14 @@ public class ChessPiece {
                     moves.add(new ChessMove(myPosition, nextPos, null));
                 }
                 //move 2 at start option
-                if (currentRow == start) {
-                    int twoMoves = currentRow + (2 * direction);
-
-                    if (onBoard(twoMoves, currentCol)) {
-                        ChessPosition twoNextPos = new ChessPosition(twoMoves, currentCol);
-                        ChessPiece twoNextPiece = board.getPiece(twoNextPos);
-                        if (twoNextPiece == null) {
-                            moves.add(new ChessMove(myPosition, twoNextPos, null));
-                        }
+                int twoMoves = currentRow + (2 * direction);
+                if (currentRow == start && onBoard(twoMoves, currentCol)) {
+                    ChessPosition twoNextPos = new ChessPosition(twoMoves, currentCol);
+                    ChessPiece twoNextPiece = board.getPiece(twoNextPos);
+                    if (twoNextPiece == null) {
+                        moves.add(new ChessMove(myPosition, twoNextPos, null));
                     }
+
                 }
             }
         }
@@ -258,7 +256,7 @@ public class ChessPiece {
 
     private void addStepMove(Collection<ChessMove> moves, ChessBoard board, ChessPosition from, int toRow, int toCol) {
         if (!onBoard(toRow, toCol)) {
-            
+
             return;
         }
         ChessPosition to = new ChessPosition(toRow, toCol);
