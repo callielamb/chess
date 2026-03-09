@@ -1,4 +1,5 @@
 package server;
+import dataaccess.DatabaseManager;
 import service.ClearService;
 import service.GameService;
 import service.UserService;
@@ -26,6 +27,12 @@ public class Server {
     }
 
     public int run(int desiredPort) {
+        try {
+            DatabaseManager.createDatabase();
+            DatabaseManager.createTables();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
         javalin.start(desiredPort);
         return javalin.port();
     }

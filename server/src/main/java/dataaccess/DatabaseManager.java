@@ -29,6 +29,40 @@ public class DatabaseManager {
         }
     }
 
+    public static void createTables() throws DataAccessException {
+        try (var connection = getConnection()) {
+            try (var statement = connection.createStatement()) {
+                String userTable = """
+                    CREATE TABLE IF NOT EXISTS users (
+                        username VARCHAR(50) NOT NULL PRIMARY KEY,
+                        password VARCHAR(100) NOT NULL,
+                        email VARCHAR(100) NOT NULL
+                    )
+                    """;
+                String authTable = """
+                    CREATE TABLE IF NOT EXISTS auth (
+                        authToken VARCHAR(100) NOT NULL PRIMARY KEY,
+                        username VARCHAR(50) NOT NULL
+                    )
+                    """;
+                String gameTable = """
+                    CREATE TABLE IF NOT EXISTS game (
+                        gameID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                        whiteUsername VARCHAR(50),
+                        blackUsername VARCHAR(50),
+                        gameName VARCHAR(100) NOT NULL,
+                        gameData TEXT NOT NULL
+                    )
+                    """;
+                statement.executeUpdate(userTable);
+                statement.executeUpdate(authTable);
+                statement.executeUpdate(gameTable);
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException("failed to create tables", ex);
+        }
+    }
+
     /**
      * Create a connection to the database and sets the catalog based upon the
      * properties specified in db.properties. Connections to the database should
@@ -74,4 +108,6 @@ public class DatabaseManager {
         var port = Integer.parseInt(props.getProperty("db.port"));
         connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
     }
+
+
 }
