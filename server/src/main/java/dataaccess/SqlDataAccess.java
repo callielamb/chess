@@ -5,37 +5,12 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 
-import java.sql.Connection;
 import org.mindrot.jbcrypt.BCrypt;
 import com.google.gson.Gson;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SqlDataAccess implements Database {
-
-    private final String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                username VARCHAR(50) NOT NULL PRIMARY KEY,
-                password VARCHAR(100) NOT NULL,
-                email VARCHAR(100) NOT NULL
-            )""",
-            """
-            CREATE TABLE IF NOT EXISTS auth (
-                authToken VARCHAR(100) NOT NULL PRIMARY KEY,
-                username VARCHAR(50) NOT NULL
-            )""",
-            """
-            CREATE TABLE IF NOT EXISTS game (
-                gameID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                whiteUsername VARCHAR(50),
-                blackUsername VARCHAR(50),
-                gameName VARCHAR(100) NOT NULL,
-                gameData TEXT NOT NULL
-            )"""
-    };
-
     public SqlDataAccess() {
         configureDatabase();
     }
@@ -43,14 +18,8 @@ public class SqlDataAccess implements Database {
     private void configureDatabase() {
         try {
             DatabaseManager.createDatabase();
-            try (Connection conn = DatabaseManager.getConnection()) {
-                for (String statement :createStatements) {
-                    try (var preparedStatement = conn.prepareStatement(statement)) {
-                        preparedStatement.executeUpdate();
-                    }
-                }
-            }
-        } catch (DataAccessException | SQLException ex) {
+            DatabaseManager.createTables();
+        } catch (DataAccessException ex) {
             throw new RuntimeException("unable to configure database", ex);
         }
     }
