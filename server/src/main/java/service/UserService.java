@@ -1,5 +1,6 @@
 package service;
 
+import org.mindrot.jbcrypt.BCrypt;
 import request.LoginRequest;
 import request.RegisterRequest;
 import result.LoginResult;
@@ -45,7 +46,7 @@ public class UserService {
         }
         UserData user = database.getUser(request.username());
 
-        if (user == null || !user.password().equals(request.password())) {
+        if (user == null || !BCrypt.checkpw(request.password(), user.password())) {
             return new LoginResult(null, null, "Error: unauthorized");
         }
 
