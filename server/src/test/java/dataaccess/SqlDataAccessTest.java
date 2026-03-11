@@ -20,11 +20,11 @@ public class SqlDataAccessTest {
     @Test
     void createUserPositive() {
         sqlDataAccess.createUser(testUser);
-        UserData foundUser = sqlDataAccess.getUser("callie");
+        UserData foundUser = sqlDataAccess.getUser(testAuth.username());
         assertNotNull(foundUser);
-        assertEquals("callie", foundUser.username());
-        assertEquals("callie@email.com", foundUser.email());
-        assertNotEquals("password123", foundUser.password());
+        assertEquals(testAuth.username(), foundUser.username());
+        assertEquals(testUser.email(), foundUser.email());
+        assertNotEquals(testUser.password(), foundUser.password());
     }
 
     @Test
@@ -36,10 +36,10 @@ public class SqlDataAccessTest {
     @Test
     void getUserPositive() {
         sqlDataAccess.createUser(testUser);
-        UserData foundUser = sqlDataAccess.getUser("callie");
+        UserData foundUser = sqlDataAccess.getUser(testAuth.username());
         assertNotNull(foundUser);
-        assertEquals("callie", foundUser.username());
-        assertEquals("callie@email.com", foundUser.email());
+        assertEquals(testAuth.username(), foundUser.username());
+        assertEquals(testUser.email(), foundUser.email());
     }
 
     @Test
@@ -52,21 +52,21 @@ public class SqlDataAccessTest {
     void createAuthPositive() {
         sqlDataAccess.createUser(testUser);
         sqlDataAccess.createAuth(testAuth);
-        AuthData foundAuth = sqlDataAccess.getAuth("token123");
+        AuthData foundAuth = sqlDataAccess.getAuth(testAuth.authToken());
+
         assertNotNull(foundAuth);
-        assertEquals("token123", foundAuth.authToken());
-        assertEquals("callie", foundAuth.username());
+        assertEquals(testAuth.authToken(), foundAuth.authToken());
+        assertEquals(testAuth.username(), foundAuth.username());
     }
 
     @Test
     void getAuthPositive() {
         sqlDataAccess.createUser(testUser);
         sqlDataAccess.createAuth(testAuth);
-        AuthData foundAuth = sqlDataAccess.getAuth("token123");
+        AuthData foundAuth = sqlDataAccess.getAuth(testAuth.authToken());
 
-        assertNotNull(foundAuth);
-        assertEquals("token123", foundAuth.authToken());
-        assertEquals("callie", foundAuth.username());
+        assertEquals(testAuth.authToken(), foundAuth.authToken());
+        assertEquals(testAuth.username(), foundAuth.username());
     }
 
     @Test
@@ -79,8 +79,8 @@ public class SqlDataAccessTest {
     void deleteAuthPositive() {
         sqlDataAccess.createUser(testUser);
         sqlDataAccess.createAuth(testAuth);
-        sqlDataAccess.deleteAuth("token123");
-        AuthData foundAuth = sqlDataAccess.getAuth("token123");
+        sqlDataAccess.deleteAuth(testAuth.authToken());
+        AuthData foundAuth = sqlDataAccess.getAuth(testAuth.authToken());
         assertNull(foundAuth);
     }
 
@@ -90,8 +90,8 @@ public class SqlDataAccessTest {
         sqlDataAccess.createAuth(testAuth);
         sqlDataAccess.clear();
 
-        assertNull(sqlDataAccess.getUser("callie"));
-        assertNull(sqlDataAccess.getAuth("token123"));
+        assertNull(sqlDataAccess.getUser(testAuth.username()));
+        assertNull(sqlDataAccess.getAuth(testAuth.authToken()));
         assertEquals(0, sqlDataAccess.listGames().size());
     }
 }
