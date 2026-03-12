@@ -1,5 +1,9 @@
 package dataaccess;
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,6 +64,13 @@ public class SqlDataAccessTest {
     }
 
     @Test
+    void createAuthNegative() {
+        sqlDataAccess.createUser(testUser);
+        sqlDataAccess.createAuth(testAuth);
+        assertThrows(RuntimeException.class, () -> sqlDataAccess.createAuth(testAuth));
+    }
+
+    @Test
     void getAuthPositive() {
         sqlDataAccess.createUser(testUser);
         sqlDataAccess.createAuth(testAuth);
@@ -85,13 +96,90 @@ public class SqlDataAccessTest {
     }
 
     @Test
+    void deleteAuthNegative() {
+        assertDoesNotThrow(() -> sqlDataAccess.deleteAuth("badToken"));
+        assertNull(sqlDataAccess.getAuth("badToken"));
+    }
+
+    @Test
     void clearPositive() {
         sqlDataAccess.createUser(testUser);
         sqlDataAccess.createAuth(testAuth);
         sqlDataAccess.clear();
-
         assertNull(sqlDataAccess.getUser(testAuth.username()));
         assertNull(sqlDataAccess.getAuth(testAuth.authToken()));
         assertEquals(0, sqlDataAccess.listGames().size());
+    }
+
+    @Test
+    void createGamePositive() {
+        ChessGame chessGame = new ChessGame();
+        GameData game = new GameData(0, null, null, "testGame", chessGame);
+        int gameID = sqlDataAccess.createGame(game);
+
+        assertTrue(gameID > 0);
+    }
+
+    @Test
+    void createGameNegative() {
+        assertThrows(NullPointerException.class, () -> sqlDataAccess.createGame(null));
+    }
+
+    @Test
+    void getGamePositive() {
+        ChessGame chessGame = new ChessGame();
+        GameData game = new GameData(0, null, null, "testGame", chessGame);
+        int gameID = sqlDataAccess.createGame(game);
+        GameData foundGame = sqlDataAccess.getGame(gameID);
+        assertNotNull(foundGame);
+        assertEquals("testGame", foundGame.gameName());
+        assertNotNull(foundGame.game());
+    }
+
+    @Test
+    void getGameNegative() {
+        GameData foundGame = sqlDataAccess.getGame(9999);
+        assertNull(foundGame);
+    }
+
+    @Test
+    void listGamesPositive() {
+        ChessGame firstGame = new ChessGame();
+        ChessGame secondGame = new ChessGame();
+        sqlDataAccess.createGame(new GameData(0, null, null, "gameOne", firstGame));
+        sqlDataAccess.createGame(new GameData(0, null, null, "gameTwo", secondGame));
+
+        assertEquals(2, sqlDataAccess.listGames().size());
+    }
+
+    @Test
+    void listGamesNegative() {
+        assertTrue(sqlDataAccess.listGames().isEmpty());
+    }
+
+    @Test
+    void updateGamePositive() throws Exception {
+        ChessGame chessGame = new ChessGame();
+        GameData game = new GameData(0, null, null, "game1", chessGame);
+        int gameID = sqlDataAccess.createGame(game);
+
+        ChessMove move = new ChessMove(new ChessPosition(2, 1), new ChessPosition(3, 1), null);
+        chessGame.makeMove(move);
+        GameData updatedGame = new GameData(gameID, "jack", null, "game1", chessGame);
+        sqlDataAccess.updateGame(updatedGame);
+        GameData foundGame = sqlDataAccess.getGame(gameID);
+
+        assertEquals("jack", foundGame.whiteUsername());
+        assertNull(foundGame.game().getBoard().getPiece(new ChessPosition(2, 1)));
+        assertNotNull(foundGame.game().getBoard().getPiece(new ChessPosition(3, 1)));
+    }
+
+    @Test
+    void updateGameNegative() {
+        ChessGame chessGame = new ChessGame();
+        GameData fakeGame = new GameData(9999, "jack", null, "fakeGame", chessGame);
+        sqlDataAccess.updateGame(fakeGame);
+
+        assertNull(sqlDataAccess.getGame(9999));
     }
 }
