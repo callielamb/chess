@@ -1,12 +1,14 @@
 package client;
 
 import com.google.gson.Gson;
+import model.AuthData;
+import model.GameData;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import model.*;
 import java.util.Collection;
 
 public class ServerFacade {
@@ -19,15 +21,40 @@ public class ServerFacade {
     }
 
     public AuthData login(String username, String password) {
-        return null;
+        try {
+
+            var request = new LoginRequest(username, password);
+            var result = makeRequest("POST", "/session", request, null, LoginResponse.class);
+
+            if (result.message() != null) {
+                throw new RuntimeException(result.message());
+            }
+            return new AuthData(result.authToken(), result.username());
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
     }
 
     public AuthData register(String username, String password, String email) {
-        return null;
+        try {
+            var request = new RegisterRequest(username, password, email);
+            var result = makeRequest("POST", "/user", request, null, RegisterResponse.class);
+
+            if (result.message() != null) {
+                throw new RuntimeException(result.message());
+            }
+            return new AuthData(result.authToken(), result.username());
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
     }
 
     public void logout(String authToken) {
-
+        try {
+            makeRequest("DELETE", "/session", null, authToken, null);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
     }
 
     public int createGame(String authToken, String gameName) {
@@ -35,7 +62,16 @@ public class ServerFacade {
     }
 
     public Collection<GameData> listGames(String authToken) {
-        return null;
+        try {
+            var result = makeRequest("GET", "/game", null, authToken, ListGamesResponse.class);
+
+            if (result.message() != null) {
+                throw new RuntimeException(result.message());
+            }
+            return result.games();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
     }
 
     public void joinGame(String authToken, String playerColor, int gameID) {
