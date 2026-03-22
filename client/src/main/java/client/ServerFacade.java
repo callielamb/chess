@@ -58,7 +58,18 @@ public class ServerFacade {
     }
 
     public int createGame(String authToken, String gameName) {
-        return 0;
+        try {
+            
+            var request = new CreateGameRequest(gameName);
+            var result = makeRequest("POST", "/game", request, authToken, CreateGameResponse.class);
+
+            if (result.message() != null) {
+                throw new RuntimeException(result.message());
+            }
+            return result.gameID();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
     }
 
     public Collection<GameData> listGames(String authToken) {
@@ -75,7 +86,15 @@ public class ServerFacade {
     }
 
     public void joinGame(String authToken, String playerColor, int gameID) {
-
+        try {
+            var request = new JoinGameRequest(playerColor, gameID);
+            var result = makeRequest("PUT", "/game", request, authToken, JoinGameResponse.class);
+            if (result.message() != null) {
+                throw new RuntimeException(result.message());
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
     }
 
     private <T> T makeRequest(String method, String path, Object requestBody, String authToken, Class<T> responseClass) throws Exception {
