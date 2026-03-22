@@ -71,4 +71,33 @@ public class ServerFacadeTests {
                 () -> facade.login("callie", "wrongPassword"));
     }
 
+    @Test
+    void logoutPositive() {
+        AuthData authData = facade.register("callie", "password", "callie@email.com");
+        assertDoesNotThrow(() -> facade.logout(authData.authToken()));
+    }
+
+    @Test
+    void logoutNegative() {
+        assertThrows(RuntimeException.class,
+                () -> facade.logout("badToken"));
+    }
+
+    @Test
+    void listGamesPositive() {
+        AuthData authData = facade.register("callie", "password", "callie@email.com");
+        facade.createGame(authData.authToken(), "gameOne");
+        facade.createGame(authData.authToken(), "gameTwo");
+
+        var games = facade.listGames(authData.authToken());
+
+        assertNotNull(games);
+        assertEquals(2, games.size());
+    }
+
+    @Test
+    void listGamesNegative() {
+        assertThrows(RuntimeException.class,
+                () -> facade.listGames("badToken"));
+    }
 }
