@@ -59,7 +59,7 @@ public class ServerFacade {
 
     public int createGame(String authToken, String gameName) {
         try {
-            
+
             var request = new CreateGameRequest(gameName);
             var result = makeRequest("POST", "/game", request, authToken, CreateGameResponse.class);
 
@@ -101,7 +101,9 @@ public class ServerFacade {
         var url = new URI(serverUrl + path).toURL();
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(method);
-        connection.setDoOutput(true);
+        if (requestBody != null) {
+            connection.setDoOutput(true);
+        }
         connection.addRequestProperty("Content-Type", "application/json");
 
         if (authToken != null) {
