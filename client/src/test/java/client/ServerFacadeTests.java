@@ -100,4 +100,34 @@ public class ServerFacadeTests {
         assertThrows(RuntimeException.class,
                 () -> facade.listGames("badToken"));
     }
+
+    @Test
+    void createGamePositive() {
+        AuthData authData = facade.register("callie", "password", "callie@email.com");
+        int gameID = facade.createGame(authData.authToken(), "testGame");
+        assertTrue(gameID > 0);
+    }
+
+    @Test
+    void createGameNegative() {
+        assertThrows(RuntimeException.class,
+                () -> facade.createGame("badToken", "testGame"));
+    }
+
+    @Test
+    void joinGamePositive() {
+        AuthData authData = facade.register("callie", "password", "callie@email.com");
+        int gameID = facade.createGame(authData.authToken(), "testGame");
+        assertDoesNotThrow(() -> facade.joinGame(authData.authToken(), "WHITE", gameID));
+    }
+
+    @Test
+    void joinGameNegative() {
+        AuthData authData = facade.register("callie", "password", "callie@email.com");
+        int gameID = facade.createGame(authData.authToken(), "testGame");
+        facade.joinGame(authData.authToken(), "WHITE", gameID);
+        AuthData secondUser = facade.register("megan", "password", "megan@email.com");
+        assertThrows(RuntimeException.class,
+                () -> facade.joinGame(secondUser.authToken(), "WHITE", gameID));
+    }
 }
