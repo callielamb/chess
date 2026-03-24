@@ -2,6 +2,7 @@ package client;
 
 import model.GameData;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +18,7 @@ public class ChessClient {
     private String authToken = null;
     private String username = null;
     private List<GameData> currentGames = new ArrayList<>();
+    private final BoardPrinter boardPrinter = new BoardPrinter();
 
     public void run() {
         System.out.println("Welcome to a game of chess! Type 'help' to get started.");
@@ -208,7 +210,11 @@ public class ChessClient {
         }
         server.joinGame(authToken, playerColor, game.gameID());
 
-        return "Joined game as " + playerColor + ".";
+        if (playerColor.equals("WHITE")) {
+            return "Joined game as WHITE.\n" + boardPrinter.printWhiteBoard(game.game());
+        } else {
+            return "Joined game as BLACK.\n" + boardPrinter.printBlackBoard(game.game());
+        }
     }
 
     private String observeGame(String[] tokens) {
@@ -216,7 +222,7 @@ public class ChessClient {
             return "To observe, input: observe <gameNumber>";
         }
         GameData game = getGameFromNumber(tokens[1]);
-        return "Observing game: " + game.gameName();
+        return "Observing game: " + game.gameName() + "\n" + boardPrinter.printWhiteBoard(game.game());
     }
 
     private String preloginHelp() {
