@@ -81,6 +81,10 @@ public class ChessClient {
                     return createGame(tokens);
                 case "list":
                     return listGames();
+                case "play":
+                    return playGame(tokens);
+                case "observe":
+                    return observeGame(tokens);
                 default:
                     return "Invalid command. Type 'help' to see options.";
             }
@@ -170,6 +174,49 @@ public class ChessClient {
         }
 
         return result.toString().trim();
+    }
+
+    private GameData getGameFromNumber(String gameNumberText) {
+        if (currentGames.isEmpty()) {
+            throw new RuntimeException("No games listed. Use 'list' to view games.");
+        }
+        int gameNumber;
+
+        try {
+            gameNumber = Integer.parseInt(gameNumberText);
+        } catch (NumberFormatException ex) {
+            throw new RuntimeException("Game number must be a real number.");
+        }
+
+        if (gameNumber < 1 || gameNumber > currentGames.size()) {
+            throw new RuntimeException("Invalid game number.");
+        }
+
+        return currentGames.get(gameNumber - 1);
+    }
+
+    private String playGame(String[] tokens) {
+        if (tokens.length != 3) {
+            return "To play, input: play <gameNumber> <WHITE|BLACK>";
+        }
+
+        GameData game = getGameFromNumber(tokens[1]);
+        String playerColor = tokens[2].toUpperCase();
+
+        if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
+            return "Player color must be WHITE or BLACK.";
+        }
+        server.joinGame(authToken, playerColor, game.gameID());
+
+        return "Joined game as " + playerColor + ".";
+    }
+
+    private String observeGame(String[] tokens) {
+        if (tokens.length != 2) {
+            return "To observe, input: observe <gameNumber>";
+        }
+        GameData game = getGameFromNumber(tokens[1]);
+        return "Observing game: " + game.gameName();
     }
 
     private String preloginHelp() {
