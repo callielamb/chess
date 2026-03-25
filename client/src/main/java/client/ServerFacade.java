@@ -122,8 +122,10 @@ public class ServerFacade {
         if (status >= 400) {
             try (InputStream err = connection.getErrorStream()) {
                 if (err != null) {
-                    var errorResponse = gson.fromJson(new InputStreamReader(err), Object.class);
-                    throw new RuntimeException("Request failed: " + errorResponse);
+                    ErrorResponse errorResponse = gson.fromJson(new InputStreamReader(err), ErrorResponse.class);
+                    if (errorResponse != null && errorResponse.message() != null) {
+                        throw new RuntimeException(errorResponse.message());
+                    }
                 }
             }
             throw new RuntimeException("Request failed. Status: " + status);
@@ -136,6 +138,4 @@ public class ServerFacade {
             return gson.fromJson(new InputStreamReader(is), responseClass);
         }
     }
-
-
 }

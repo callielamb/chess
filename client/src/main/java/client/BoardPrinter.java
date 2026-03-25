@@ -4,6 +4,7 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
+import ui.EscapeSequences;
 
 public class BoardPrinter {
 
@@ -19,73 +20,83 @@ public class BoardPrinter {
         String result = "";
 
         if (whiteView) {
-            result += "  a  b  c  d  e  f  g  h\n";
+            result += headerWhite();
             for (int row = 8; row >= 1; row--) {
-                result += row + " ";
+                result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + " ";
                 for (int col = 1; col <= 8; col++) {
-                    result += pieceString(board, row, col);
+                    boolean lightSquare = (row + col) % 2 == 0;
+                    result += squareString(board, row, col, lightSquare);
                 }
-                result += " " + row + "\n";
+                result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + "\n";
             }
-            result += "  a  b  c  d  e  f  g  h";
-
+            result += headerWhite();
         } else {
-            result += "  h  g  f  e  d  c  b  a\n";
-            for(int row = 1; row <= 8; row++) {
-                result += row + " ";
+            result += headerBlack();
+
+            for (int row = 1; row <= 8; row++) {
+                result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + " ";
+
                 for (int col = 8; col >= 1; col--) {
-                    result += pieceString(board, row, col);
+                    boolean lightSquare = (row + col) % 2 == 0;
+                    result += squareString(board, row, col, lightSquare);
                 }
-                result += " " + row + "\n";
+                result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + "\n";
             }
-            result += "  h  g  f  e  d  c  b  a";
+            result += headerBlack();
         }
+        result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR;
         return result;
     }
 
-    private String pieceString(ChessBoard board, int row, int col) {
-        ChessPiece piece = board.getPiece(new ChessPosition(row, col));
-        if (piece == null) {
-            return ".  ";
+    private String headerWhite() {
+        String result = EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + "   ";
+        for (char file = 'a'; file <= 'h'; file++) {
+            result += "\u2003" + file + " ";
         }
-        return pieceSymbol(piece) + " ";
+        return result + "\n";
+    }
+
+    private String headerBlack() {
+        String result = EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + "   ";
+        for (char file = 'h'; file >= 'a'; file--) {
+            result += "\u2003" + file + " ";
+        }
+        return result + "\n";
+    }
+
+    private String squareString(ChessBoard board, int row, int col, boolean lightSquare) {
+        ChessPiece piece = board.getPiece(new ChessPosition(row, col));
+        String background;
+        if (lightSquare) {
+            background = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
+        } else {
+            background = EscapeSequences.SET_BG_COLOR_DARK_GREY;
+        }
+        return background + pieceSymbol(piece);
     }
 
     private String pieceSymbol(ChessPiece piece) {
-        ChessPiece.PieceType type = piece.getPieceType();
-        ChessGame.TeamColor color = piece.getTeamColor();
-
-        if (color == ChessGame.TeamColor.WHITE) {
-            switch (type) {
-                case KING:
-                    return "K";
-                case QUEEN:
-                    return "Q";
-                case ROOK:
-                    return "R";
-                case BISHOP:
-                    return "B";
-                case KNIGHT:
-                    return "N";
-                case PAWN:
-                    return "P";
-            }
-        } else {
-            switch (type) {
-                case KING:
-                    return "k";
-                case QUEEN:
-                    return "q";
-                case ROOK:
-                    return "r";
-                case BISHOP:
-                    return "b";
-                case KNIGHT:
-                    return "n";
-                case PAWN:
-                    return "p";
-            }
+        if (piece == null) {
+            return EscapeSequences.SET_TEXT_COLOR_BLACK + EscapeSequences.EMPTY;
         }
-        return "?";
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            return EscapeSequences.SET_TEXT_COLOR_WHITE + switch (piece.getPieceType()) {
+                case KING -> EscapeSequences.WHITE_KING;
+                case QUEEN -> EscapeSequences.WHITE_QUEEN;
+                case BISHOP -> EscapeSequences.WHITE_BISHOP;
+                case KNIGHT -> EscapeSequences.WHITE_KNIGHT;
+                case ROOK -> EscapeSequences.WHITE_ROOK;
+                case PAWN -> EscapeSequences.WHITE_PAWN;
+            };
+        } else {
+            return EscapeSequences.SET_TEXT_COLOR_BLACK + switch (piece.getPieceType()) {
+                case KING -> EscapeSequences.BLACK_KING;
+                case QUEEN -> EscapeSequences.BLACK_QUEEN;
+                case BISHOP -> EscapeSequences.BLACK_BISHOP;
+                case KNIGHT -> EscapeSequences.BLACK_KNIGHT;
+                case ROOK -> EscapeSequences.BLACK_ROOK;
+                case PAWN -> EscapeSequences.BLACK_PAWN;
+            };
+        }
     }
 }
