@@ -87,6 +87,8 @@ public class ChessClient {
                     return playGame(tokens);
                 case "observe":
                     return observeGame(tokens);
+                //case "clear":
+                    //return clearDatabase();
                 default:
                     return "Invalid command. Type 'help' to see options.";
             }
@@ -94,6 +96,22 @@ public class ChessClient {
             return ex.getMessage();
         }
     }
+
+    /**
+     * This is when I need to test/clear databases
+    private String clearDatabase() {
+        try {
+            server.clear();
+            authToken = null;
+            username = null;
+            currentGames.clear();
+
+            return "Database cleared.";
+        } catch (RuntimeException ex) {
+            return ex.getMessage();
+        }
+    }
+     */
 
     private String login(String[] tokens) {
         if (tokens.length != 3) {
