@@ -24,7 +24,7 @@ public class BoardPrinter {
             for (int row = 8; row >= 1; row--) {
                 result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + " ";
                 for (int col = 1; col <= 8; col++) {
-                    boolean lightSquare = (row + col) % 2 == 0;
+                    boolean lightSquare= (row + col) % 2 != 0;
                     result += squareString(board, row, col, lightSquare);
                 }
                 result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + "\n";
@@ -37,7 +37,7 @@ public class BoardPrinter {
                 result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + " ";
 
                 for (int col = 8; col >= 1; col--) {
-                    boolean lightSquare = (row + col) % 2 == 0;
+                    boolean lightSquare =(row + col) % 2 != 0;
                     result += squareString(board, row, col, lightSquare);
                 }
                 result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + "\n";
