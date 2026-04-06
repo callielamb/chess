@@ -1,18 +1,22 @@
 package client;
 
 import model.GameData;
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
 
+
 public class ChessClient {
 
     private final Scanner scanner = new Scanner(System.in);
-    private final ServerFacade server = new ServerFacade("http://localhost:8080");
+    private final String serverUrl = "http://localhost:8080";
+    private final ServerFacade server = new ServerFacade(serverUrl);
+
+    private WebSocketClient ws;
+    private int currentGameID;
+    private String currentColor;
 
     private boolean running = true;
     private String authToken = null;
@@ -208,13 +212,31 @@ public class ChessClient {
         if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) {
             return "Player color must be WHITE or BLACK.";
         }
+
         server.joinGame(authToken, playerColor, game.gameID());
 
-        if (playerColor.equals("WHITE")) {
-            return "Joined game as WHITE.\n" + boardPrinter.printWhiteBoard(game.game());
-        } else {
-            return "Joined game as BLACK.\n" + boardPrinter.printBlackBoard(game.game());
-        }
+        currentGameID = game.gameID();
+        currentColor = playerColor;
+
+        connectWebSocket();
+        sendConnect();
+
+        return "Joining game...";
+    }
+
+    private void connectWebSocket() {
+        String wsUrl = serverUrl.replace("http", "ws") + "/ws";
+        ws = new WebSocketClient(this, wsUrl);
+    }
+
+    private void sendConnect() {
+        var command = new websocket.commands.UserGameCommand(
+                websocket.commands.UserGameCommand.CommandType.CONNECT,
+                authToken,
+                currentGameID
+        );
+        String json = new com.google.gson.Gson().toJson(command);
+        ws.send(json);
     }
 
     private String observeGame(String[] tokens) {
@@ -222,7 +244,20 @@ public class ChessClient {
             return "To observe, input: observe <gameNumber>";
         }
         GameData game = getGameFromNumber(tokens[1]);
-        return "Observing game: " + game.gameName() + "\n" + boardPrinter.printWhiteBoard(game.game());
+
+        currentGameID = game.gameID();
+        currentColor = "WHITE";
+        connectWebSocket();
+        sendConnect();
+        return "Observing game...";
+    }
+
+    public void updateGame(GameData game) {
+        if (currentColor.equals("WHITE")) {
+            System.out.println(boardPrinter.printWhiteBoard(game.game()));
+        } else {
+            System.out.println(boardPrinter.printBlackBoard(game.game()));
+        }
     }
 
     private String preloginHelp() {
