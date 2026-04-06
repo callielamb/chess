@@ -2,7 +2,11 @@ package websocket;
 import com.google.gson.Gson;
 import dataaccess.Database;
 import io.javalin.websocket.WsContext;
+import model.AuthData;
+import model.GameData;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.ErrorMessage;
 
 public class WebSocketHandler {
     private final Gson gson = new Gson();
@@ -25,15 +29,9 @@ public class WebSocketHandler {
             UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
             switch (command.getCommandType()) {
                 case CONNECT -> handleConnect(session, command);
-                case MAKE_MOVE -> {
-                    System.out.println("MAKE_MOVE not implemented yet");
-                }
-                case LEAVE -> {
-                    System.out.println("LEAVE not implemented yet");
-                }
-                case RESIGN -> {
-                    System.out.println("RESIGN not implemented yet");
-                }
+                case MAKE_MOVE -> System.out.println("MAKE_MOVE not implemented yet");
+                case LEAVE -> System.out.println("LEAVE not implemented yet");
+                case RESIGN -> System.out.println("RESIGN not implemented yet");
             }
         } catch (Exception ex) {
             System.out.println("WebSocket message error: " + ex.getMessage());
@@ -42,10 +40,35 @@ public class WebSocketHandler {
     }
     private void handleConnect(WsContext session, UserGameCommand command) {
         try {
-            System.out.println("CONNECT received for game " + command.getGameID());
+            String authToken = command.getAuthToken();
+            int gameID = command.getGameID();
+
+            AuthData auth = database.getAuth(authToken);
+            if (auth == null) {
+                sendError(session, "Error: unauthorized");
+                return;
+            }
+            String username = auth.username();
+
+            GameData game = database.getGame(gameID);
+            if (game == null) {
+                sendError(session, "Error: game not found");
+                return;
+            }
+
+            connectionManager.add(username, session);
+
+            LoadGameMessage loadMessage = new LoadGameMessage(game);
+            session.send(gson.toJson(loadMessage));
+            System.out.println(username + " connected to game " + gameID);
         } catch (Exception ex) {
-            System.out.println("CONNECT error: " + ex.getMessage());
-            ex.printStackTrace();
+            sendError(session, ex.getMessage());
         }
+    }
+    private void sendError(WsContext session, String errorMessage) {
+        try {
+            ErrorMessage error = new ErrorMessage(errorMessage);
+            session.send(gson.toJson(error));
+        } catch (Exception ignored) {}
     }
 }
