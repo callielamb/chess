@@ -138,4 +138,12 @@ public class ServerFacade {
             return gson.fromJson(new InputStreamReader(is), responseClass);
         }
     }
+    public void clear() {
+        try {
+            makeRequest("DELETE", "/db", null, null, null);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
+
 }

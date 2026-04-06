@@ -7,6 +7,7 @@ import model.GameData;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.ErrorMessage;
+import websocket.messages.NotificationMessage;
 
 public class WebSocketHandler {
     private final Gson gson = new Gson();
@@ -28,7 +29,11 @@ public class WebSocketHandler {
         try {
             UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
             switch (command.getCommandType()) {
-                case CONNECT -> handleConnect(session, command);
+                case CONNECT -> {
+                    websocket.commands.ConnectCommand connectCommand =
+                            gson.fromJson(message, websocket.commands.ConnectCommand.class);
+                    handleConnect(session, connectCommand);
+                }
                 case MAKE_MOVE -> System.out.println("MAKE_MOVE not implemented yet");
                 case LEAVE -> System.out.println("LEAVE not implemented yet");
                 case RESIGN -> System.out.println("RESIGN not implemented yet");
@@ -38,7 +43,7 @@ public class WebSocketHandler {
             ex.printStackTrace();
         }
     }
-    private void handleConnect(WsContext session, UserGameCommand command) {
+    private void handleConnect(WsContext session, websocket.commands.ConnectCommand command) {
         try {
             String authToken = command.getAuthToken();
             int gameID = command.getGameID();
@@ -55,12 +60,35 @@ public class WebSocketHandler {
                 sendError(session, "Error: game not found");
                 return;
             }
-
-            connectionManager.add(username, session);
+            connectionManager.add(gameID, username, session);
 
             LoadGameMessage loadMessage = new LoadGameMessage(game);
             session.send(gson.toJson(loadMessage));
-            System.out.println(username + " connected to game " + gameID);
+
+            String role;
+            String requestedColor = command.getPlayerColor();
+
+            if (requestedColor == null) {
+                role = "OBSERVER";
+            } else {
+                role = requestedColor.toUpperCase();
+            }
+
+            String joinMessage;
+            if (role.equals("OBSERVER")) {
+                joinMessage = username + " joined the game as an observer.";
+            } else {
+                joinMessage = username + " joined the game as " + role + ".";
+            }
+
+            connectionManager.broadcastExcept(
+                    gameID,
+                    username,
+                    new NotificationMessage(joinMessage)
+            );
+
+            System.out.println(username + " connected to game " + gameID + " as " + role);
+
         } catch (Exception ex) {
             sendError(session, ex.getMessage());
         }

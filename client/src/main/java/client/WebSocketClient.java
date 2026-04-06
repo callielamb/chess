@@ -35,13 +35,25 @@ public class WebSocketClient {
 
             switch (serverMessage.getServerMessageType()) {
                 case LOAD_GAME -> handleLoadGame(message);
-                case ERROR -> System.out.println("Error received");
-                case NOTIFICATION -> System.out.println("Notification received");
+                case ERROR -> handleError(message);
+                case NOTIFICATION -> handleNotification(message);
             }
 
         } catch (Exception e) {
             System.out.println("WebSocket receive error");
         }
+    }
+
+    private void handleError(String message) {
+        websocket.messages.ErrorMessage error =
+                gson.fromJson(message, websocket.messages.ErrorMessage.class);
+        System.out.println(error.getErrorMessage());
+    }
+
+    private void handleNotification(String message) {
+        websocket.messages.NotificationMessage note =
+                gson.fromJson(message, websocket.messages.NotificationMessage.class);
+        System.out.println(note.getMessage());
     }
 
     private void handleLoadGame(String message) {

@@ -91,9 +91,24 @@ public class ChessClient {
                     return playGame(tokens);
                 case "observe":
                     return observeGame(tokens);
+                    //delete later
+                case "clear":
+                    return clearDatabase();
                 default:
                     return "Invalid command. Type 'help' to see options.";
             }
+        } catch (RuntimeException ex) {
+            return ex.getMessage();
+        }
+    }
+    private String clearDatabase() {
+        try {
+            server.clear();
+            authToken = null;
+            username = null;
+            currentGames.clear();
+
+            return "Database cleared.";
         } catch (RuntimeException ex) {
             return ex.getMessage();
         }
@@ -230,11 +245,7 @@ public class ChessClient {
     }
 
     private void sendConnect() {
-        var command = new websocket.commands.UserGameCommand(
-                websocket.commands.UserGameCommand.CommandType.CONNECT,
-                authToken,
-                currentGameID
-        );
+        var command = new websocket.commands.ConnectCommand(authToken, currentGameID, currentColor);
         String json = new com.google.gson.Gson().toJson(command);
         ws.send(json);
     }
@@ -246,17 +257,17 @@ public class ChessClient {
         GameData game = getGameFromNumber(tokens[1]);
 
         currentGameID = game.gameID();
-        currentColor = "WHITE";
+        currentColor = null;
         connectWebSocket();
         sendConnect();
         return "Observing game...";
     }
 
     public void updateGame(GameData game) {
-        if (currentColor.equals("WHITE")) {
-            System.out.println(boardPrinter.printWhiteBoard(game.game()));
-        } else {
+        if ("BLACK".equals(currentColor)) {
             System.out.println(boardPrinter.printBlackBoard(game.game()));
+        } else {
+            System.out.println(boardPrinter.printWhiteBoard(game.game()));
         }
     }
 
