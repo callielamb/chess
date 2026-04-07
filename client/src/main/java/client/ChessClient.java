@@ -1,12 +1,12 @@
 package client;
 
 import model.GameData;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
-
 
 public class ChessClient {
 
@@ -17,6 +17,8 @@ public class ChessClient {
     private WebSocketClient ws;
     private int currentGameID;
     private String currentColor;
+    private GameData activeGame;
+    private boolean inGameplay = false;
 
     private boolean running = true;
     private String authToken = null;
@@ -48,6 +50,8 @@ public class ChessClient {
 
         if (authToken == null) {
             return evalPrelogin(command, tokens);
+        } else if (inGameplay) {
+            return evalGameplay(command, tokens);
         } else {
             return evalPostlogin(command, tokens);
         }
@@ -91,7 +95,6 @@ public class ChessClient {
                     return playGame(tokens);
                 case "observe":
                     return observeGame(tokens);
-                    //delete later
                 case "clear":
                     return clearDatabase();
                 default:
@@ -101,12 +104,41 @@ public class ChessClient {
             return ex.getMessage();
         }
     }
+
+    private String evalGameplay(String command, String[] tokens) {
+        try {
+            switch (command) {
+                case "help":
+                    return gameplayHelp();
+                case "redraw":
+                    return redrawBoard();
+                case "leave":
+                    return leaveGame();
+                case "move":
+                    return movePiece(tokens);
+                case "resign":
+                    return resignGame(tokens);
+                case "highlight":
+                    return highlightMoves(tokens);
+                case "quit":
+                    running = false;
+                    return "Thanks for playing, Goodbye!";
+                default:
+                    return "Invalid command. Type 'help' to see options.";
+            }
+        } catch (RuntimeException ex) {
+            return ex.getMessage();
+        }
+    }
+
     private String clearDatabase() {
         try {
             server.clear();
             authToken = null;
             username = null;
             currentGames.clear();
+            activeGame = null;
+            inGameplay = false;
 
             return "Database cleared.";
         } catch (RuntimeException ex) {
@@ -143,6 +175,8 @@ public class ChessClient {
         authToken = null;
         username = null;
         currentGames.clear();
+        activeGame = null;
+        inGameplay = false;
 
         return "Logged out successfully.";
     }
@@ -202,7 +236,6 @@ public class ChessClient {
             throw new RuntimeException("No games listed. Use 'list' to view games.");
         }
         int gameNumber;
-
         try {
             gameNumber = Integer.parseInt(gameNumberText);
         } catch (NumberFormatException ex) {
@@ -232,11 +265,28 @@ public class ChessClient {
 
         currentGameID = game.gameID();
         currentColor = playerColor;
+        activeGame = game;
+        inGameplay = true;
 
         connectWebSocket();
         sendConnect();
 
         return "Joining game...";
+    }
+
+    private String observeGame(String[] tokens) {
+        if (tokens.length != 2) {
+            return "To observe, input: observe <gameNumber>";
+        }
+        GameData game = getGameFromNumber(tokens[1]);
+
+        currentGameID = game.gameID();
+        currentColor = null;
+        activeGame = game;
+        inGameplay = true;
+        connectWebSocket();
+        sendConnect();
+        return "Observing game...";
     }
 
     private void connectWebSocket() {
@@ -250,25 +300,40 @@ public class ChessClient {
         ws.send(json);
     }
 
-    private String observeGame(String[] tokens) {
-        if (tokens.length != 2) {
-            return "To observe, input: observe <gameNumber>";
-        }
-        GameData game = getGameFromNumber(tokens[1]);
-
-        currentGameID = game.gameID();
-        currentColor = null;
-        connectWebSocket();
-        sendConnect();
-        return "Observing game...";
-    }
-
     public void updateGame(GameData game) {
+        activeGame = game;
         if ("BLACK".equals(currentColor)) {
             System.out.println(boardPrinter.printBlackBoard(game.game()));
         } else {
             System.out.println(boardPrinter.printWhiteBoard(game.game()));
         }
+    }
+
+    private String redrawBoard() {
+        if (activeGame == null) {
+            return "No active game to redraw.";
+        }
+        if ("BLACK".equals(currentColor)) {
+            return boardPrinter.printBlackBoard(activeGame.game());
+        } else {
+            return boardPrinter.printWhiteBoard(activeGame.game());
+        }
+    }
+
+    private String leaveGame() {
+        return "Leave command coming soon.";
+    }
+
+    private String movePiece(String[] tokens) {
+        return "Move command coming soon.";
+    }
+
+    private String resignGame(String[] tokens) {
+        return "Resign command coming soon.";
+    }
+
+    private String highlightMoves(String[] tokens) {
+        return "Highlight command coming soon.";
     }
 
     private String preloginHelp() {
@@ -290,6 +355,19 @@ public class ChessClient {
                 list - list games
                 play <gameNumber> <WHITE|BLACK> - join a game
                 observe <gameNumber> - observe a game
+                quit - exit the program
+                """;
+    }
+
+    private String gameplayHelp() {
+        return """
+                Available gameplay commands:
+                help - show this message
+                redraw - redraw the board
+                leave - leave the game
+                move <start> <end> - make a move
+                resign - resign the game
+                highlight <position> - show legal moves
                 quit - exit the program
                 """;
     }
