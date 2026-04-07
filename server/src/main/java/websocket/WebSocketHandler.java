@@ -1,13 +1,15 @@
 package websocket;
+import chess.ChessGame;
+import chess.ChessMove;
+import websocket.messages.NotificationMessage;
+import websocket.messages.LoadGameMessage;
 import com.google.gson.Gson;
 import dataaccess.Database;
 import io.javalin.websocket.WsContext;
 import model.AuthData;
 import model.GameData;
 import websocket.commands.UserGameCommand;
-import websocket.messages.LoadGameMessage;
 import websocket.messages.ErrorMessage;
-import websocket.messages.NotificationMessage;
 
 public class WebSocketHandler {
     private final Gson gson = new Gson();
@@ -34,8 +36,11 @@ public class WebSocketHandler {
                             gson.fromJson(message, websocket.commands.ConnectCommand.class);
                     handleConnect(session, connectCommand);
                 }
-                case MAKE_MOVE -> System.out.println("MAKE_MOVE not implemented yet");
-                case LEAVE -> {
+                case MAKE_MOVE -> {
+                    websocket.commands.MakeMoveCommand moveCommand =
+                            gson.fromJson(message, websocket.commands.MakeMoveCommand.class);
+                    handleMakeMove(session, moveCommand);
+                }                case LEAVE -> {
                     websocket.commands.LeaveCommand leaveCommand =
                             gson.fromJson(message, websocket.commands.LeaveCommand.class);
                     handleLeave(session, leaveCommand);
@@ -96,6 +101,66 @@ public class WebSocketHandler {
         } catch (Exception ex) {
             sendError(session, ex.getMessage());
         }
+    }
+    private void handleMakeMove(WsContext session, websocket.commands.MakeMoveCommand command) {
+        try {
+            String authToken = command.getAuthToken();
+            int gameID = command.getGameID();
+            ChessMove move = command.getMove();
+            AuthData auth = database.getAuth(authToken);
+            if (auth == null) {
+                sendError(session, "Error: unauthorized");
+                return;
+            }
+            String username = auth.username();
+
+            GameData game = database.getGame(gameID);
+            if (game == null) {
+                sendError(session, "Error: game not found");
+                return;
+            }
+            boolean isWhite = username.equals(game.whiteUsername());
+            boolean isBlack = username.equals(game.blackUsername());
+
+            if (!isWhite && !isBlack) {
+                sendError(session, "Error: observers cannot make moves");
+                return;
+            }
+            ChessGame chessGame = game.game();
+
+            ChessGame.TeamColor teamColor = chessGame.getTeamTurn();
+            if (isWhite && teamColor != ChessGame.TeamColor.WHITE) {
+                sendError(session, "Error: not your turn");
+                return;
+            }
+            if (isBlack && teamColor != ChessGame.TeamColor.BLACK) {
+                sendError(session, "Error: not your turn");
+                return;
+            }
+            chessGame.makeMove(move);
+            GameData updatedGame = new GameData(
+                    game.gameID(),
+                    game.whiteUsername(),
+                    game.blackUsername(),
+                    game.gameName(),
+                    chessGame
+            );
+            database.updateGame(updatedGame);
+            connectionManager.broadcast(gameID, new LoadGameMessage(updatedGame));
+            String moveText = positionToString(move.getStartPosition()) + " to " +
+                    positionToString(move.getEndPosition());
+            connectionManager.broadcast(
+                    gameID,
+                    new NotificationMessage(username + " moved " + moveText)
+            );
+        } catch (Exception ex) {
+            sendError(session, ex.getMessage());
+        }
+    }
+    private String positionToString(chess.ChessPosition position) {
+        char file = (char) ('a' + position.getColumn() - 1);
+        int rank = position.getRow();
+        return "" + file + rank;
     }
     private void handleLeave(WsContext session, websocket.commands.LeaveCommand command) {
         try {

@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Scanner;
+import chess.ChessMove;
+import chess.ChessPosition;
 
 public class ChessClient {
 
@@ -334,7 +336,18 @@ public class ChessClient {
     }
 
     private String movePiece(String[] tokens) {
-        return "Move command coming soon.";
+        if (tokens.length != 3) {
+            return "To move, input: move <start> <end>";
+        }
+        ChessPosition start = parsePosition(tokens[1]);
+        ChessPosition end = parsePosition(tokens[2]);
+
+        ChessMove move = new ChessMove(start, end, null);
+
+        var command = new websocket.commands.MakeMoveCommand(authToken, currentGameID, move);
+        String json = new com.google.gson.Gson().toJson(command);
+        ws.send(json);
+        return "Move sent.";
     }
 
     private String resignGame(String[] tokens) {
@@ -343,6 +356,21 @@ public class ChessClient {
 
     private String highlightMoves(String[] tokens) {
         return "Highlight command coming soon.";
+    }
+
+    private ChessPosition parsePosition(String text) {
+        if (text.length() != 2) {
+            throw new RuntimeException("Position must look like e2.");
+        }
+        char fileChar = Character.toLowerCase(text.charAt(0));
+        char rankChar = text.charAt(1);
+        if (fileChar < 'a' || fileChar > 'h' || rankChar < '1' || rankChar > '8') {
+            throw new RuntimeException("Position must be between a1 and h8.");
+        }
+
+        int col = fileChar - 'a' + 1;
+        int row = rankChar - '0';
+        return new ChessPosition(row, col);
     }
 
     private String preloginHelp() {
