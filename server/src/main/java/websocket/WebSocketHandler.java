@@ -35,7 +35,11 @@ public class WebSocketHandler {
                     handleConnect(session, connectCommand);
                 }
                 case MAKE_MOVE -> System.out.println("MAKE_MOVE not implemented yet");
-                case LEAVE -> System.out.println("LEAVE not implemented yet");
+                case LEAVE -> {
+                    websocket.commands.LeaveCommand leaveCommand =
+                            gson.fromJson(message, websocket.commands.LeaveCommand.class);
+                    handleLeave(session, leaveCommand);
+                }
                 case RESIGN -> System.out.println("RESIGN not implemented yet");
             }
         } catch (Exception ex) {
@@ -89,6 +93,27 @@ public class WebSocketHandler {
 
             System.out.println(username + " connected to game " + gameID + " as " + role);
 
+        } catch (Exception ex) {
+            sendError(session, ex.getMessage());
+        }
+    }
+    private void handleLeave(WsContext session, websocket.commands.LeaveCommand command) {
+        try {
+            String authToken = command.getAuthToken();
+            int gameID = command.getGameID();
+
+            AuthData auth = database.getAuth(authToken);
+            if (auth == null) {
+                sendError(session, "Error: unauthorized");
+                return;
+            }
+            String username = auth.username();
+            connectionManager.remove(session);
+            connectionManager.broadcast(
+                    gameID,
+                    new NotificationMessage(username + " left the game.")
+            );
+            System.out.println(username + " left game " + gameID);
         } catch (Exception ex) {
             sendError(session, ex.getMessage());
         }

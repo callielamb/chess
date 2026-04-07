@@ -321,7 +321,16 @@ public class ChessClient {
     }
 
     private String leaveGame() {
-        return "Leave command coming soon.";
+        if (ws != null) {
+            var command = new websocket.commands.LeaveCommand(authToken, currentGameID);
+            String json = new com.google.gson.Gson().toJson(command);
+            ws.send(json);
+        }
+        inGameplay = false;
+        activeGame = null;
+        currentGameID = 0;
+        currentColor = null;
+        return "Left game.";
     }
 
     private String movePiece(String[] tokens) {
