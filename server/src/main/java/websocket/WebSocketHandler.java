@@ -108,6 +108,31 @@ public class WebSocketHandler {
                 return;
             }
             String username = auth.username();
+
+            GameData game = database.getGame(gameID);
+            if (game == null) {
+                sendError(session, "Error: game not found");
+                return;
+            }
+            if (username.equals(game.whiteUsername())) {
+                GameData updatedGame = new GameData(
+                        game.gameID(),
+                        null,
+                        game.blackUsername(),
+                        game.gameName(),
+                        game.game()
+                );
+                database.updateGame(updatedGame);
+            } else if (username.equals(game.blackUsername())) {
+                GameData updatedGame = new GameData(
+                        game.gameID(),
+                        game.whiteUsername(),
+                        null,
+                        game.gameName(),
+                        game.game()
+                );
+                database.updateGame(updatedGame);
+            }
             connectionManager.remove(session);
             connectionManager.broadcast(
                     gameID,
