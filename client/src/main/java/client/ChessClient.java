@@ -406,7 +406,17 @@ public class ChessClient {
     }
 
     private String highlightMoves(String[] tokens) {
-        return "Highlight command coming soon.";
+        if (activeGame == null) {
+            return "No active game to highlight.";
+        }
+        if (tokens.length != 2) {
+            return "To highlight, input: highlight <position>";
+        }
+        ChessPosition position = parsePosition(tokens[1]);
+        if (activeGame.game().getBoard().getPiece(position) == null) {
+            return "There is no piece at that position.";
+        }
+        return boardPrinter.printHighlightedBoard(activeGame.game(), position, "BLACK".equals(currentColor));
     }
 
     private ChessPosition parsePosition(String text) {

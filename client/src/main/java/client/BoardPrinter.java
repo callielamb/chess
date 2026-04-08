@@ -1,10 +1,9 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import ui.EscapeSequences;
+
+import java.util.Collection;
 
 public class BoardPrinter {
 
@@ -98,5 +97,81 @@ public class BoardPrinter {
                 case PAWN -> EscapeSequences.BLACK_PAWN;
             };
         }
+    }
+    public String printHighlightedBoard(ChessGame game, ChessPosition selected, boolean blackView) {
+        Collection<ChessMove> validMoves = game.validMoves(selected);
+        return printBoardWithHighlights(game, selected, validMoves, blackView);
+    }
+
+    private String printBoardWithHighlights(ChessGame game, ChessPosition selected,
+                                            Collection<ChessMove> validMoves, boolean blackView) {
+        ChessBoard board = game.getBoard();
+        String result = "";
+
+        if (!blackView) {
+            result += headerWhite();
+
+            for (int row = 8; row >= 1; row--) {
+                result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + " ";
+
+                for (int col = 1; col <= 8; col++) {
+                    result += highlightedSquareString(board, selected, validMoves, row, col);
+                }
+
+                result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + "\n";
+            }
+
+            result += headerWhite();
+        } else {
+            result += headerBlack();
+
+            for (int row = 1; row <= 8; row++) {
+                result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + " ";
+
+                for (int col = 8; col >= 1; col--) {
+                    result += highlightedSquareString(board, selected, validMoves, row, col);
+                }
+
+                result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.SET_TEXT_COLOR_WHITE + " " + row + "\n";
+            }
+
+            result += headerBlack();
+        }
+
+        result += EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR;
+        return result;
+    }
+    private String highlightedSquareString(ChessBoard board, ChessPosition selected,
+                                           Collection<ChessMove> validMoves, int row, int col) {
+        ChessPiece piece = board.getPiece(new ChessPosition(row, col));
+
+        String background;
+
+        if (isSelectedSquare(selected, row, col)) {
+            background = EscapeSequences.SET_BG_COLOR_YELLOW;
+        } else if (isValidMoveSquare(validMoves, row, col)) {
+            background = EscapeSequences.SET_BG_COLOR_GREEN;
+        } else {
+            boolean lightSquare = (row + col) % 2 != 0;
+            if (lightSquare) {
+                background = EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
+            } else {
+                background = EscapeSequences.SET_BG_COLOR_DARK_GREY;
+            }
+        }
+
+        return background + pieceSymbol(piece);
+    }
+    private boolean isSelectedSquare(ChessPosition selected, int row, int col) {
+        return selected.getRow() == row && selected.getColumn() == col;
+    }
+
+    private boolean isValidMoveSquare(Collection<ChessMove> validMoves, int row, int col) {
+        for (ChessMove move : validMoves) {
+            if (move.getEndPosition().getRow() == row && move.getEndPosition().getColumn() == col) {
+                return true;
+            }
+        }
+        return false;
     }
 }
