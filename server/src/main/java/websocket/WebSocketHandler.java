@@ -145,13 +145,11 @@ public class WebSocketHandler {
             int gameID = command.getGameID();
             ChessMove move = command.getMove();
             if (move == null) {
-                System.out.println("Move is NULL");
                 sendError(session, "Error: bad move data");
                 return;
             }
             AuthData auth = database.getAuth(authToken);
             if (auth == null) {
-                System.out.println("Auth NOT FOUND");
                 sendError(session, "Error: unauthorized");
                 return;
             }
@@ -160,7 +158,6 @@ public class WebSocketHandler {
 
             GameData game = database.getGame(gameID);
             if (game == null) {
-                System.out.println("Game NOT FOUND");
                 sendError(session, "Error: game not found");
                 return;
             }
@@ -173,7 +170,6 @@ public class WebSocketHandler {
             boolean isBlack = username.equals(game.blackUsername());
 
             if (!isWhite && !isBlack) {
-                System.out.println("User is observer, rejecting move");
                 sendError(session, "Error: observers cannot make moves");
                 return;
             }
@@ -182,12 +178,10 @@ public class WebSocketHandler {
 
             ChessGame.TeamColor teamColor = chessGame.getTeamTurn();
             if (isWhite && teamColor != ChessGame.TeamColor.WHITE) {
-                System.out.println("White tried to move out of turn");
                 sendError(session, "Error: not your turn");
                 return;
             }
             if (isBlack && teamColor != ChessGame.TeamColor.BLACK) {
-                System.out.println("Black tried to move out of turn");
                 sendError(session, "Error: not your turn");
                 return;
             }
@@ -207,15 +201,41 @@ public class WebSocketHandler {
             if (move.getPromotionPiece() != null) {
                 moveText += " promoting to " + move.getPromotionPiece().toString().toLowerCase();
             }
+            ChessGame.TeamColor nextTurn = chessGame.getTeamTurn();
+            String nextUsername;
+            if (nextTurn == ChessGame.TeamColor.WHITE) {
+                nextUsername = updatedGame.whiteUsername();
+            } else {
+                nextUsername = updatedGame.blackUsername();
+            }
+            boolean inCheck = chessGame.isInCheck(nextTurn);
+            boolean inCheckmate = chessGame.isInCheckmate(nextTurn);
+            boolean inStalemate = chessGame.isInStalemate(nextTurn);
 
             connectionManager.broadcast(gameID, new LoadGameMessage(updatedGame));
             connectionManager.broadcast(
                     gameID,
                     new NotificationMessage(username + " moved " + moveText)
             );
+            if (inCheckmate) {
+                connectionManager.broadcast(
+                        gameID,
+                        new NotificationMessage("Checkmate. " + username + " wins.")
+                );
+                resignedGames.add(gameID);
+            } else if (inStalemate) {
+                connectionManager.broadcast(
+                        gameID,
+                        new NotificationMessage("Stalemate. Game over.")
+                );
+                resignedGames.add(gameID);
+            } else if (inCheck) {
+                connectionManager.broadcast(
+                        gameID,
+                        new NotificationMessage(nextUsername + " is in check.")
+                );
+            }
         } catch (Exception ex) {
-            System.out.println("EXCEPTION in MAKE_MOVE:");
-            ex.printStackTrace();
             sendError(session, ex.getMessage());
         }
     }

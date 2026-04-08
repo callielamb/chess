@@ -28,7 +28,7 @@ public class Server {
         new GameRoutes(javalin, gameService);
 
         javalin.ws("/ws", ws -> {
-            ws.onConnect(webSocketHandler::onConnect);
+            ws.onConnect(ctx -> {ctx.enableAutomaticPings(); webSocketHandler.onConnect(ctx);});
             ws.onClose(webSocketHandler::onClose);
             ws.onMessage(ctx -> webSocketHandler.onMessage(ctx, ctx.message()));
         });
