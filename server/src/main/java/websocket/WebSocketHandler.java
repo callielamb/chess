@@ -10,11 +10,14 @@ import model.AuthData;
 import model.GameData;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
+import java.util.HashSet;
+import java.util.Set;
 
 public class WebSocketHandler {
     private final Gson gson = new Gson();
     private final ConnectionManager connectionManager = new ConnectionManager();
     private final Database database;
+    private final Set<Integer> resignedGames = new HashSet<>();
 
     public WebSocketHandler(Database database) {
         this.database = database;
@@ -45,11 +48,46 @@ public class WebSocketHandler {
                             gson.fromJson(message, websocket.commands.LeaveCommand.class);
                     handleLeave(session, leaveCommand);
                 }
-                case RESIGN -> System.out.println("RESIGN not implemented yet");
+                case RESIGN -> handleResign(session, command);
             }
         } catch (Exception ex) {
             System.out.println("WebSocket message error: " + ex.getMessage());
             ex.printStackTrace();
+        }
+    }
+    private void handleResign(WsContext session, UserGameCommand command) {
+        try {
+            String authToken = command.getAuthToken();
+            int gameID = command.getGameID();
+            AuthData auth = database.getAuth(authToken);
+            if (auth == null) {
+                sendError(session, "Error: unauthorized");
+                return;
+            }
+            String username = auth.username();
+
+            GameData game = database.getGame(gameID);
+            if (game == null) {
+                sendError(session, "Error: game not found");
+                return;
+            }
+            boolean isWhite = username.equals(game.whiteUsername());
+            boolean isBlack = username.equals(game.blackUsername());
+            if (!isWhite && !isBlack) {
+                sendError(session, "Error: observers cannot resign");
+                return;
+            }
+            if (resignedGames.contains(gameID)) {
+                sendError(session, "Error: game is already over");
+                return;
+            }
+            resignedGames.add(gameID);
+            connectionManager.broadcast(
+                    gameID,
+                    new NotificationMessage(username + " resigned. Game over.")
+            );
+        } catch (Exception ex) {
+            sendError(session, ex.getMessage());
         }
     }
     private void handleConnect(WsContext session, websocket.commands.ConnectCommand command) {
@@ -127,6 +165,10 @@ public class WebSocketHandler {
                 return;
             }
 
+            if (resignedGames.contains(gameID)) {
+                sendError(session, "Error: game is over");
+                return;
+            }
             boolean isWhite = username.equals(game.whiteUsername());
             boolean isBlack = username.equals(game.blackUsername());
 

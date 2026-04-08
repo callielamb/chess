@@ -384,7 +384,25 @@ public class ChessClient {
     }
 
     private String resignGame(String[] tokens) {
-        return "Resign command coming soon.";
+        if (currentColor == null) {
+            return "Observers cannot resign.";
+        }
+        System.out.print("Confirm resignation (yes/no): ");
+        String answer = scanner.nextLine().trim().toLowerCase();
+        if (!answer.equals("yes")) {
+            return "Resign cancelled.";
+        }
+        if (ws == null) {
+            return "Not connected to a game anymore.";
+        }
+        var command = new websocket.commands.UserGameCommand(
+                websocket.commands.UserGameCommand.CommandType.RESIGN,
+                authToken,
+                currentGameID
+        );
+        String json = new com.google.gson.Gson().toJson(command);
+        ws.send(json);
+        return "Resign sent.";
     }
 
     private String highlightMoves(String[] tokens) {
@@ -436,7 +454,7 @@ public class ChessClient {
                 redraw - redraw the board
                 leave - leave the game
                 move <start> <end> [queen|rook|bishop|knight] - make a move
-                resign - resign the game
+                resign - resign the game (confirmation required)
                 highlight <position> - show legal moves
                 quit - exit the program
                 """;
