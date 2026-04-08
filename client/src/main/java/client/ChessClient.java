@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessPiece;
 import model.GameData;
 
 import java.util.ArrayList;
@@ -250,6 +251,14 @@ public class ChessClient {
 
         return currentGames.get(gameNumber - 1);
     }
+    public void handleSocketClosed() {
+        ws = null;
+        inGameplay = false;
+        activeGame = null;
+        currentGameID = 0;
+        currentColor = null;
+        System.out.println("Game connection closed. Returning to menu.");
+    }
 
     private String playGame(String[] tokens) {
         if (tokens.length != 3) {
@@ -336,18 +345,42 @@ public class ChessClient {
     }
 
     private String movePiece(String[] tokens) {
-        if (tokens.length != 3) {
-            return "To move, input: move <start> <end>";
+        if (ws == null) {
+            return "Not connected to a game anymore.";
         }
+        if (tokens.length != 3 && tokens.length != 4) {
+            return "To move, input: move <start> <end> [queen|rook|bishop|knight]";
+        }
+
         ChessPosition start = parsePosition(tokens[1]);
         ChessPosition end = parsePosition(tokens[2]);
 
-        ChessMove move = new ChessMove(start, end, null);
+        ChessPiece.PieceType promotionPiece = null;
+        if (tokens.length == 4) {
+            promotionPiece = parsePromotionPiece(tokens[3]);
+        }
+        ChessMove move = new ChessMove(start, end, promotionPiece);
 
         var command = new websocket.commands.MakeMoveCommand(authToken, currentGameID, move);
         String json = new com.google.gson.Gson().toJson(command);
         ws.send(json);
+
         return "Move sent.";
+    }
+    private ChessPiece.PieceType parsePromotionPiece(String text) {
+        String piece = text.toLowerCase();
+        switch (piece) {
+            case "queen":
+                return ChessPiece.PieceType.QUEEN;
+            case "rook":
+                return ChessPiece.PieceType.ROOK;
+            case "bishop":
+                return ChessPiece.PieceType.BISHOP;
+            case "knight":
+                return ChessPiece.PieceType.KNIGHT;
+            default:
+                throw new RuntimeException("Promotion piece must be queen, rook, bishop, or knight.");
+        }
     }
 
     private String resignGame(String[] tokens) {
@@ -402,7 +435,7 @@ public class ChessClient {
                 help - show this message
                 redraw - redraw the board
                 leave - leave the game
-                move <start> <end> - make a move
+                move <start> <end> [queen|rook|bishop|knight] - make a move
                 resign - resign the game
                 highlight <position> - show legal moves
                 quit - exit the program

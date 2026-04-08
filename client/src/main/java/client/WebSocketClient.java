@@ -32,32 +32,70 @@ public class WebSocketClient {
     public void onMessage(String message) {
         try {
             ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
-
             switch (serverMessage.getServerMessageType()) {
                 case LOAD_GAME -> handleLoadGame(message);
                 case ERROR -> handleError(message);
                 case NOTIFICATION -> handleNotification(message);
             }
-
         } catch (Exception e) {
-            System.out.println("WebSocket receive error");
+            System.out.println("WebSocket receive error:");
+            e.printStackTrace();
+        }
+    }
+    @OnClose
+    public void onClose(CloseReason reason) {
+        System.out.println("WebSocket closed: " + reason);
+        client.handleSocketClosed();
+    }
+
+    @OnError
+    public void onError(Session session, Throwable error) {
+        System.out.println("WebSocket error:");
+        error.printStackTrace();
+    }
+
+
+    private void handleError(String message) {
+        try {
+            websocket.messages.ErrorMessage error =
+                    gson.fromJson(message, websocket.messages.ErrorMessage.class);
+            System.out.println(error.getErrorMessage());
+        } catch (Exception e) {
+            System.out.println("Error inside handleError:");
+            e.printStackTrace();
         }
     }
 
-    private void handleError(String message) {
-        websocket.messages.ErrorMessage error =
-                gson.fromJson(message, websocket.messages.ErrorMessage.class);
-        System.out.println(error.getErrorMessage());
-    }
-
     private void handleNotification(String message) {
-        websocket.messages.NotificationMessage note =
-                gson.fromJson(message, websocket.messages.NotificationMessage.class);
-        System.out.println(note.getMessage());
+        try {
+            websocket.messages.NotificationMessage note =
+                    gson.fromJson(message, websocket.messages.NotificationMessage.class);
+            System.out.println(note.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error inside handleNotification:");
+            e.printStackTrace();
+        }
     }
 
     private void handleLoadGame(String message) {
-        LoadGameMessage load = gson.fromJson(message, LoadGameMessage.class);
-        client.updateGame(load.getGame());
+        try {
+            LoadGameMessage load = gson.fromJson(message, LoadGameMessage.class);
+            if (load == null) {
+                System.out.println("LOAD_GAME parse failed: load is null");
+                return;
+            }
+            if (load.getGame() == null) {
+                System.out.println("LOAD_GAME parse failed: game is null");
+                return;
+            }
+            if (load.getGame().game() == null) {
+                System.out.println("LOAD_GAME parse failed: chess game is null");
+                return;
+            }
+            client.updateGame(load.getGame());
+        } catch (Exception e) {
+            System.out.println("Error inside handleLoadGame:");
+            e.printStackTrace();
+        }
     }
 }

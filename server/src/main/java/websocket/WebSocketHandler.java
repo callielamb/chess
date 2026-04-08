@@ -56,7 +56,6 @@ public class WebSocketHandler {
         try {
             String authToken = command.getAuthToken();
             int gameID = command.getGameID();
-
             AuthData auth = database.getAuth(authToken);
             if (auth == null) {
                 sendError(session, "Error: unauthorized");
@@ -74,14 +73,15 @@ public class WebSocketHandler {
             LoadGameMessage loadMessage = new LoadGameMessage(game);
             session.send(gson.toJson(loadMessage));
 
-            String role;
             String requestedColor = command.getPlayerColor();
-
+            String role;
             if (requestedColor == null) {
                 role = "OBSERVER";
             } else {
                 role = requestedColor.toUpperCase();
             }
+
+            System.out.println(username + " connected as role: " + role);
 
             String joinMessage;
             if (role.equals("OBSERVER")) {
@@ -95,10 +95,9 @@ public class WebSocketHandler {
                     username,
                     new NotificationMessage(joinMessage)
             );
-
-            System.out.println(username + " connected to game " + gameID + " as " + role);
-
         } catch (Exception ex) {
+            System.out.println("EXCEPTION in CONNECT:");
+            ex.printStackTrace();
             sendError(session, ex.getMessage());
         }
     }
@@ -107,33 +106,46 @@ public class WebSocketHandler {
             String authToken = command.getAuthToken();
             int gameID = command.getGameID();
             ChessMove move = command.getMove();
+            if (move == null) {
+                System.out.println("Move is NULL");
+                sendError(session, "Error: bad move data");
+                return;
+            }
             AuthData auth = database.getAuth(authToken);
             if (auth == null) {
+                System.out.println("Auth NOT FOUND");
                 sendError(session, "Error: unauthorized");
                 return;
             }
+
             String username = auth.username();
 
             GameData game = database.getGame(gameID);
             if (game == null) {
+                System.out.println("Game NOT FOUND");
                 sendError(session, "Error: game not found");
                 return;
             }
+
             boolean isWhite = username.equals(game.whiteUsername());
             boolean isBlack = username.equals(game.blackUsername());
 
             if (!isWhite && !isBlack) {
+                System.out.println("User is observer, rejecting move");
                 sendError(session, "Error: observers cannot make moves");
                 return;
             }
+
             ChessGame chessGame = game.game();
 
             ChessGame.TeamColor teamColor = chessGame.getTeamTurn();
             if (isWhite && teamColor != ChessGame.TeamColor.WHITE) {
+                System.out.println("White tried to move out of turn");
                 sendError(session, "Error: not your turn");
                 return;
             }
             if (isBlack && teamColor != ChessGame.TeamColor.BLACK) {
+                System.out.println("Black tried to move out of turn");
                 sendError(session, "Error: not your turn");
                 return;
             }
@@ -146,14 +158,22 @@ public class WebSocketHandler {
                     chessGame
             );
             database.updateGame(updatedGame);
-            connectionManager.broadcast(gameID, new LoadGameMessage(updatedGame));
+
             String moveText = positionToString(move.getStartPosition()) + " to " +
                     positionToString(move.getEndPosition());
+
+            if (move.getPromotionPiece() != null) {
+                moveText += " promoting to " + move.getPromotionPiece().toString().toLowerCase();
+            }
+
+            connectionManager.broadcast(gameID, new LoadGameMessage(updatedGame));
             connectionManager.broadcast(
                     gameID,
                     new NotificationMessage(username + " moved " + moveText)
             );
         } catch (Exception ex) {
+            System.out.println("EXCEPTION in MAKE_MOVE:");
+            ex.printStackTrace();
             sendError(session, ex.getMessage());
         }
     }
