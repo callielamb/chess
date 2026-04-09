@@ -190,13 +190,8 @@ public class WebSocketHandler {
                     chessGame
             );
             database.updateGame(updatedGame);
+            String moveText = buildMoveText(move);
 
-            String moveText = positionToString(move.getStartPosition()) + " to " +
-                    positionToString(move.getEndPosition());
-
-            if (move.getPromotionPiece() != null) {
-                moveText += " promoting to " + move.getPromotionPiece().toString().toLowerCase();
-            }
             ChessGame.TeamColor nextTurn = chessGame.getTeamTurn();
             String nextUsername;
             if (nextTurn == ChessGame.TeamColor.WHITE) {
@@ -235,6 +230,16 @@ public class WebSocketHandler {
         } catch (Exception ex) {
             sendError(session, ex.getMessage());
         }
+    }
+    private String buildMoveText(ChessMove move) {
+        String moveText = positionToString(move.getStartPosition()) + " to " +
+                positionToString(move.getEndPosition());
+
+        if (move.getPromotionPiece() != null) {
+            moveText += " promoting to " + move.getPromotionPiece().toString().toLowerCase();
+        }
+
+        return moveText;
     }
     private String positionToString(chess.ChessPosition position) {
         char file = (char) ('a' + position.getColumn() - 1);

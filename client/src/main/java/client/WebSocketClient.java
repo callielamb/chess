@@ -48,13 +48,6 @@ public class WebSocketClient {
         client.handleSocketClosed();
     }
 
-    @OnError
-    public void onError(Session session, Throwable error) {
-        System.out.println("WebSocket error:");
-        error.printStackTrace();
-    }
-
-
     private void handleError(String message) {
         try {
             websocket.messages.ErrorMessage error =

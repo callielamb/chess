@@ -60,17 +60,4 @@ public class ConnectionManager {
             }
         }
     }
-    public void broadcastToObservers(int gameID, ServerMessage message) {
-        if (!connections.containsKey(gameID)) {
-            return;
-        }
-
-        String json = gson.toJson(message);
-
-        for (Connection connection : connections.get(gameID).values()) {
-            if (connection.role.equals("OBSERVER") && connection.session.session.isOpen()) {
-                connection.session.send(json);
-            }
-        }
-    }
 }
