@@ -7,19 +7,32 @@ import java.util.Map;
 
 public class ConnectionManager {
 
-    private final Map<Integer, Map<String, WsContext>> connections = new HashMap<>();
+    private final Map<Integer, Map<String, Connection>> connections = new HashMap<>();
     private final Gson gson = new Gson();
 
-    public void add(int gameID, String username, WsContext session) {
+    private static class Connection {
+        private final String username;
+        private final String role;
+        private final WsContext session;
+
+        public Connection(String username, String role, WsContext session) {
+            this.username = username;
+            this.role = role;
+            this.session = session;
+        }
+    }
+
+    public void add(int gameID, String username, String role, WsContext session) {
         if (!connections.containsKey(gameID)) {
             connections.put(gameID, new HashMap<>());
         }
-        connections.get(gameID).put(username, session);
+
+        connections.get(gameID).put(username, new Connection(username, role, session));
     }
 
     public void remove(WsContext session) {
-        for (Map<String, WsContext> gameConnections : connections.values()) {
-            gameConnections.values().removeIf(value -> value.session.equals(session.session));
+        for (Map<String, Connection> gameConnections : connections.values()) {
+            gameConnections.values().removeIf(value -> value.session.session.equals(session.session));
         }
     }
     public void broadcast(int gameID, ServerMessage message) {
@@ -28,9 +41,9 @@ public class ConnectionManager {
         }
         String json = gson.toJson(message);
 
-        for (WsContext session : connections.get(gameID).values()) {
-            if (session.session.isOpen()) {
-                session.send(json);
+        for (Connection connection : connections.get(gameID).values()) {
+            if (connection.session.session.isOpen()) {
+                connection.session.send(json);
             }
         }
     }
@@ -41,9 +54,22 @@ public class ConnectionManager {
         }
         String json = gson.toJson(message);
 
-        for (Map.Entry<String, WsContext> entry : connections.get(gameID).entrySet()) {
-            if (!entry.getKey().equals(excludedUsername) && entry.getValue().session.isOpen()) {
-                entry.getValue().send(json);
+        for (Map.Entry<String, Connection> entry : connections.get(gameID).entrySet()) {
+            if (!entry.getKey().equals(excludedUsername) && entry.getValue().session.session.isOpen()) {
+                entry.getValue().session.send(json);
+            }
+        }
+    }
+    public void broadcastToObservers(int gameID, ServerMessage message) {
+        if (!connections.containsKey(gameID)) {
+            return;
+        }
+
+        String json = gson.toJson(message);
+
+        for (Connection connection : connections.get(gameID).values()) {
+            if (connection.role.equals("OBSERVER") && connection.session.session.isOpen()) {
+                connection.session.send(json);
             }
         }
     }

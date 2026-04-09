@@ -106,21 +106,23 @@ public class WebSocketHandler {
                 sendError(session, "Error: game not found");
                 return;
             }
-            connectionManager.add(gameID, username, session);
-
-            LoadGameMessage loadMessage = new LoadGameMessage(game);
-            session.send(gson.toJson(loadMessage));
-
             String requestedColor = command.getPlayerColor();
             String role;
-            if (requestedColor == null) {
-                role = "OBSERVER";
-            } else {
+
+            if (requestedColor != null) {
                 role = requestedColor.toUpperCase();
+            } else if (username.equals(game.whiteUsername())) {
+                role = "WHITE";
+            } else if (username.equals(game.blackUsername())) {
+                role = "BLACK";
+            } else {
+                role = "OBSERVER";
             }
 
             System.out.println(username + " connected as role: " + role);
-
+            connectionManager.add(gameID, username, role, session);
+            LoadGameMessage loadMessage = new LoadGameMessage(game);
+            session.send(gson.toJson(loadMessage));
             String joinMessage;
             if (role.equals("OBSERVER")) {
                 joinMessage = username + " joined the game as an observer.";
@@ -128,14 +130,8 @@ public class WebSocketHandler {
                 joinMessage = username + " joined the game as " + role + ".";
             }
 
-            connectionManager.broadcastExcept(
-                    gameID,
-                    username,
-                    new NotificationMessage(joinMessage)
-            );
+            connectionManager.broadcastExcept(gameID, username, new NotificationMessage(joinMessage));
         } catch (Exception ex) {
-            System.out.println("EXCEPTION in CONNECT:");
-            ex.printStackTrace();
             sendError(session, ex.getMessage());
         }
     }
@@ -213,8 +209,9 @@ public class WebSocketHandler {
             boolean inStalemate = chessGame.isInStalemate(nextTurn);
 
             connectionManager.broadcast(gameID, new LoadGameMessage(updatedGame));
-            connectionManager.broadcast(
+            connectionManager.broadcastExcept(
                     gameID,
+                    username,
                     new NotificationMessage(username + " moved " + moveText)
             );
             if (inCheckmate) {
